@@ -6,7 +6,7 @@ import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.TooManyListenersException;
-import java.util.Vector;
+
 
 import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
@@ -16,7 +16,7 @@ import gnu.io.SerialPortEventListener;
 import gnu.io.UnsupportedCommOperationException;
 
 public class SerialDriver implements SerialPortEventListener {
-
+	private static final boolean debug=false;
 	InputStream inStr;
 	OutputStream outStr;
 	// byte buffer[] = new byte[32768];
@@ -31,10 +31,19 @@ public class SerialDriver implements SerialPortEventListener {
 	int numTimesInPortConnect = 0;
 	boolean monitor = false;
 	public boolean connected = false;
-	LinkedList<Byte> buffer;
+	volatile LinkedList<Byte> buffer;
 	Thread thread;
-
+	Serial_Event se;
+	
 	public SerialDriver(String com, int rate) {
+		sInit(com,rate);
+	}
+	public SerialDriver(Serial_Event se, String com, int rate) {
+		this.se=se;
+		sInit(com,rate);
+		
+	}
+	private void sInit(String com, int rate){
 		this.com = com;
 		this.rate = rate;
 		this.parity = SerialPort.PARITY_NONE;
@@ -43,6 +52,7 @@ public class SerialDriver implements SerialPortEventListener {
 		buffer = new LinkedList<Byte>();
 		try {
 			port = null;
+			@SuppressWarnings("rawtypes")
 			Enumeration portList = CommPortIdentifier.getPortIdentifiers();
 			while (portList.hasMoreElements()) {
 				CommPortIdentifier portId = (CommPortIdentifier) portList
@@ -107,6 +117,7 @@ public class SerialDriver implements SerialPortEventListener {
 
 			while (true) {
 				System.out.println("scanning inputs");
+				@SuppressWarnings("rawtypes")
 				Enumeration portList = CommPortIdentifier.getPortIdentifiers();
 				while (portList.hasMoreElements()) {
 					CommPortIdentifier portId = (CommPortIdentifier) portList
@@ -118,6 +129,7 @@ public class SerialDriver implements SerialPortEventListener {
 							try {
 								portConnect(portId);
 								thread.destroy();
+								//break breakOut;
 							} catch (PortInUseException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
@@ -165,17 +177,27 @@ public class SerialDriver implements SerialPortEventListener {
 		}
 		if (error == false) {
 			if (serialEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
-				System.out.print("SerialPort DataEvent: ");
+				if(debug){
+					System.out.println("");
+					System.out.print("SerialPort DataEvent");
+				}
 				try {
 					int av = inStr.available();
-					System.out.print("Num AV: " + av + "; ");
+					if(debug)
+						System.out.print("Num AV: " + av + "; ");
 					while (av > 0) {
 						synchronized (buffer) {
 							byte b = (byte) inStr.read();
-							System.out.println("Val: " + b);
+							if(debug)
+								System.out.print("; Val: " + ((int)b&0x000000ff));
 							buffer.addLast(b);
 							av = inStr.available();
 						}
+					}
+					//if listener is enabled and we've gotten 4 packets...
+					if(se!=null && buffer.size()>4){
+						//call serial listener
+						se.serialListener();
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -206,7 +228,7 @@ public class SerialDriver implements SerialPortEventListener {
 		int val = -1;
 		synchronized (buffer) {
 			if (buffer.size() > 0) {
-				val = buffer.pop();
+				val = (int)(buffer.pop()) & 0x000000ff;
 			}
 		}
 		return val;
@@ -227,6 +249,7 @@ public class SerialDriver implements SerialPortEventListener {
 			byte[] bb = new byte[1];
 			bb[0] = b;
 				outStr.write(bb);
+			//	System.out.println("Sent byte");
 		}else{
 			throw new NotConnectedException("Not connected to arduino...");
 		}

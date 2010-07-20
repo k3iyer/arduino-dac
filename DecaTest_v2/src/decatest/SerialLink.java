@@ -3,12 +3,15 @@ package decatest;
 import decatest.gui.StatusLight;
 import decatest.gui.StatusLight.Status;
 //import processing.serial.Serial;
+import decatest.serial.DacConnection;
+import decatest.serial.DacPacketEvent;
 import decatest.serial.NotConnectedException;
-import decatest.serial.SerialDriver;
 
 public class SerialLink implements Runnable {
-	private SerialDriver myPort;
+	//private SerialDriver myPort;
 //	private DecaTest dt;
+	private DacConnection dCon;
+	private DacPacketEvent dpe;
 	private String com;
 	public String getCom(){return com;}
 	private StatusLight sl;
@@ -16,14 +19,15 @@ public class SerialLink implements Runnable {
 		CONNECTED, NOT_CONNECTED, PROBLEM;
 	}
 	public volatile ConStat st;
-	public SerialLink(StatusLight sl, String com) {
+	public SerialLink(DacPacketEvent d, StatusLight sl, String com) {
 		//this.dt = PM;
+		this.dpe = d;
 		this.com = com;
 		this.sl = sl;
 		st=ConStat.NOT_CONNECTED;
 	}
 	public boolean getConnectedState(){
-		return myPort.connected;
+		return dCon.sd.connected;
 	}
 	// public SerialLink(PApplet pa, String str) {
 	// // TODO Auto-generated constructor stub
@@ -31,11 +35,11 @@ public class SerialLink implements Runnable {
 	// }
 
 	public boolean dataWaiting() {
-		return myPort.availableBool();		
+		return dCon.sd.availableBool();		
 	}
 
 	public int readData() {
-		return myPort.readInt();
+		return dCon.sd.readInt();
 	}
 
 	//public void writeData(String str) {
@@ -44,7 +48,8 @@ public class SerialLink implements Runnable {
 
 	public void writeData(int i) throws Exception, NullPointerException, NotConnectedException {
 		// TODO Auto-generated method stub
-		myPort.write((byte) i);
+		//myPort.write((byte) i);
+		dCon.sendByte((byte) i);
 	}
 
 	@Override
@@ -53,8 +58,10 @@ public class SerialLink implements Runnable {
 		// TODO Auto-generated method stub
 		// set light to connecting
 		sl.setStatus(Status.YELLOW);
-		myPort = new SerialDriver(com, 9600);
-		if (myPort.connected){
+		dCon=new DacConnection(dpe,com);
+		//myPort = new SerialDriver(com, 115200);
+		
+		if (dCon.sd.connected){
 			sl.setStatus(Status.GREEN);
 			st=ConStat.CONNECTED;
 		}else{

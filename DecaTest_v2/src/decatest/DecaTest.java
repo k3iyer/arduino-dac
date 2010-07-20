@@ -1,10 +1,10 @@
 package decatest;
-
+//import processing.serial.*;
 import gnu.io.CommPortIdentifier;
 
 import java.util.Enumeration;
 import java.util.LinkedList;
-
+//import ArdUnit;
 import controlP5.ControlEvent;
 import controlP5.ControlP5;
 import controlP5.Textarea;
@@ -24,17 +24,16 @@ public class DecaTest extends PApplet {
 	public static final int backR = 245;
 	public static final int backG = 245;
 	public static final int backB = 245;
-	private int tac;
-	LinkedList<ArdUnit> ards = new LinkedList<ArdUnit>();
+	
+	private LinkedList ards = new LinkedList();
 	private static final int screenWidth = 1000;
 	private static final int screenHeight = 800;
 	private Thread init;
-	Textarea textbox;
-	Thread t2;
+	private Textarea textbox;
+	private Thread t2;
 
 	public void setup() {
 		getComPorts();
-		tac = 0;
 		size(screenWidth, screenHeight);
 		frameRate(30);
 		cp5 = new ControlP5(this);
@@ -78,10 +77,11 @@ public class DecaTest extends PApplet {
 		public void run() {
 			
 			textbox.setText(textbox.text() + "\n Serial init method starting ");
-			for (ArdUnit au : ards) {
+			//for (ArdUnit au : ards) {
+                        for (int j =0; j<ards.size(); j++){
+                                ArdUnit au= (ArdUnit)ards.get(j);
 				au.SerialConnect();
-				textbox.setText(textbox.text()
-						+ "\n Connecting to Arduino on : " + au.sLink.getCom());
+				textbox.setText(textbox.text() + "\n Connecting to Arduino on : " + au.sLink.getCom());
 				String textInBox = textbox.text();
 				int counter = 0;
 				while (au.sLink.st == ConStat.NOT_CONNECTED) {
@@ -126,20 +126,23 @@ public class DecaTest extends PApplet {
 		// rect((screenWidth / 3) * 2 - 3, 2, (screenWidth / 3), screenHeight /
 		// 2 + 5);
 		for (int x = 0; x < ards.size(); x++) {
-			ards.get(x).drawGUI(x);
+			((ArdUnit)(ards.get(x))).drawGUI(x);
 		}
 	}
-
+public void draw() {
+      //  System.out.print("k");
+           int i=0;
+          i=i+1;
+	}
 	public void controlEvent(ControlEvent theEvent) {
 		// theEvent.controller().id
-		ards.get(theEvent.controller().id()).bEvent();
+		((ArdUnit)(ards.get(theEvent.controller().id()))).bEvent();
 		// System.out.println("Event Handled: " + theEvent.controller().name());
 	}
 
-	public void draw() {
-	}
+	
 
-	public static void main(String _args[]) {
-		PApplet.main(new String[] { decatest.DecaTest.class.getName() });
-	}
+       // public static void main(String _args[]) {
+	//	PApplet.main(new String[] { this.class.getName() });
+	//}
 }
