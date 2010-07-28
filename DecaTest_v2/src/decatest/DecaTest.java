@@ -30,8 +30,10 @@ public class DecaTest extends PApplet {
 	private static final int screenHeight = 800;
 	private Thread init;
 	private Textarea textbox;
+	public Textarea getTextBox(){return textbox;}
 	private Thread t2;
 
+	@SuppressWarnings("unchecked")
 	public void setup() {
 		getComPorts();
 		size(screenWidth, screenHeight);
@@ -45,6 +47,7 @@ public class DecaTest extends PApplet {
 		ards.add(new ArdUnit(this, "COM3", 10, 20));
 		ards.add(new ArdUnit(this,"COM14", 140,20));
 		ards.add(new ArdUnit(this,"COM11", 10,100));
+		
 		initGUIs();
 		t2 = new Thread(initSerialConnection);
 		t2.start();
@@ -78,8 +81,8 @@ public class DecaTest extends PApplet {
 			
 			textbox.setText(textbox.text() + "\n Serial init method starting ");
 			//for (ArdUnit au : ards) {
-                        for (int j =0; j<ards.size(); j++){
-                                ArdUnit au= (ArdUnit)ards.get(j);
+            for (int j =0; j<ards.size(); j++){
+                ArdUnit au= (ArdUnit)ards.get(j);
 				au.SerialConnect();
 				textbox.setText(textbox.text() + "\n Connecting to Arduino on : " + au.sLink.getCom());
 				String textInBox = textbox.text();

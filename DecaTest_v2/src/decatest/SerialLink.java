@@ -4,13 +4,14 @@ import decatest.gui.StatusLight;
 import decatest.gui.StatusLight.Status;
 //import processing.serial.Serial;
 import decatest.serial.DacConnection;
-import decatest.serial.DacPacketEvent;
 import decatest.serial.NotConnectedException;
+import decatest.serial.packet.DacPacketEvent;
 
 public class SerialLink implements Runnable {
 	//private SerialDriver myPort;
 //	private DecaTest dt;
 	private DacConnection dCon;
+	public DacConnection getDacCon(){return dCon;}
 	private DacPacketEvent dpe;
 	private String com;
 	public String getCom(){return com;}
@@ -60,15 +61,20 @@ public class SerialLink implements Runnable {
 		sl.setStatus(Status.YELLOW);
 		dCon=new DacConnection(dpe,com);
 		//myPort = new SerialDriver(com, 115200);
-		
-		if (dCon.sd.connected){
-			sl.setStatus(Status.GREEN);
-			st=ConStat.CONNECTED;
-		}else{
-			sl.setStatus(Status.RED);
-			st=ConStat.PROBLEM;
-			
+		while (true) {
+			if (dCon.sd.connected) {
+				sl.setStatus(Status.GREEN);
+				st = ConStat.CONNECTED;
+			} else {
+				sl.setStatus(Status.RED);
+				st = ConStat.PROBLEM;
+			}
+			try {
+				Thread.sleep(900);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-		
 	}
 }
