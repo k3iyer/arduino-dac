@@ -28,22 +28,26 @@ public class SerialDriver implements SerialPortEventListener {
 	int databits;
 	int stopbits;
 	String com;
-	int numTimesInPortConnect = 0;
+	public String getCom(){return com;}
+	static int numTimesInPortConnect = 0;
 	boolean monitor = false;
 	public boolean connected = false;
 	volatile LinkedList<Byte> buffer;
 	Thread thread;
 	Serial_Event se;
-	
+	//static AvalComs aCom;
 	public SerialDriver(String com, int rate) {
 		sInit(com,rate);
 	}
 	public SerialDriver(Serial_Event se, String com, int rate) {
 		this.se=se;
+		//aCom=new AvalComs();
+		AvalComs.startPolling();
 		sInit(com,rate);
 		
 	}
 	private void sInit(String com, int rate){
+		//System.out.println("SerialDriver Init");
 		this.com = com;
 		this.rate = rate;
 		this.parity = SerialPort.PARITY_NONE;
@@ -52,21 +56,25 @@ public class SerialDriver implements SerialPortEventListener {
 		buffer = new LinkedList<Byte>();
 		try {
 			port = null;
-			@SuppressWarnings("rawtypes")
-			Enumeration portList = CommPortIdentifier.getPortIdentifiers();
-			while (portList.hasMoreElements()) {
-				CommPortIdentifier portId = (CommPortIdentifier) portList
-						.nextElement();
-
-				if (portId.getPortType() == CommPortIdentifier.PORT_SERIAL) {
-					System.out.println(portId.getName());
-					// System.out.println("found " + portId.getName());
-					if (portId.getName().equals(com)) {
-						// System.out.println("looking for "+iname);
-						portConnect(portId);
-						// System.out.println("opening, ready to roll");
-					}
-				}
+//			@SuppressWarnings("rawtypes")
+//			Enumeration portList = CommPortIdentifier.getPortIdentifiers();
+//			while (portList.hasMoreElements()) {
+//				CommPortIdentifier portId = (CommPortIdentifier) portList
+//						.nextElement();
+//
+//				if (portId.getPortType() == CommPortIdentifier.PORT_SERIAL) {
+//					System.out.println(portId.getName());
+//					// System.out.println("found " + portId.getName());
+//					if (portId.getName().equals(com)) {
+//						// System.out.println("looking for "+iname);
+//						portConnect(portId);
+//						// System.out.println("opening, ready to roll");
+//					}
+//				}
+//			}
+			CommPortIdentifier portId = AvalComs.checkComs(this.com);
+			if(portId!=null){ //if the comm exists
+				portConnect(portId);
 			}
 		} catch (PortInUseException e) {
 			// throw new SerialException("Serial port '" + iname +
@@ -81,24 +89,29 @@ public class SerialDriver implements SerialPortEventListener {
 			// //e.printStackTrace();
 		}
 
-		if (port == null)
-			System.out.println("Port null");
-		else {
+		if (port == null){
+			System.out.println(com + " says *Port null*");
+			new Thread(reconnect).start();
+		}else {
 			System.out.println("INIT FINISHED");
 			connected = true;
 		}
 	}
 
-	private void portConnect(CommPortIdentifier portId)
+	synchronized private void portConnect(CommPortIdentifier portId)
 			throws PortInUseException, IOException,
 			UnsupportedCommOperationException, TooManyListenersException {
 		port = null;
 		// portId.removePortOwnershipListener("Serializationlol");
 		// portId.
-		port = (SerialPort) portId.open("Serializationlol",
-				2000 + numTimesInPortConnect);
+		System.out.print("IN PORT CONNECT. port.open; ");
+		port = (SerialPort) portId.open("Serializationlol" + numTimesInPortConnect,
+				2000);
+		System.out.print("port.getIn; ");
 		inStr = port.getInputStream();
+		System.out.print("port.getout; ");
 		outStr = port.getOutputStream();
+		System.out.print("port.restOfIt; ");
 		port.setSerialPortParams(rate, databits, stopbits, parity);
 		port.addEventListener(this);
 		port.notifyOnDataAvailable(true);
@@ -107,45 +120,69 @@ public class SerialDriver implements SerialPortEventListener {
 
 	private Runnable reconnect = new Runnable() {
 		public void run() {
-			System.out.println("in reconnect");
+			CommPortIdentifier portId;
+			System.out.println(com+"--in reconnect");
+			connected=false;
 			try {
-				Thread.sleep(5000);
+				Thread.sleep(2000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
-			while (true) {
-				System.out.println("scanning inputs");
-				@SuppressWarnings("rawtypes")
-				Enumeration portList = CommPortIdentifier.getPortIdentifiers();
-				while (portList.hasMoreElements()) {
-					CommPortIdentifier portId = (CommPortIdentifier) portList
-							.nextElement();
-					if (portId.getPortType() == CommPortIdentifier.PORT_SERIAL) {
-						String x = portId.getName();
-						if (x.equals(com)) {
-							// reconnected.
-							try {
-								portConnect(portId);
-								thread.destroy();
-								//break breakOut;
-							} catch (PortInUseException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							} catch (IOException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							} catch (UnsupportedCommOperationException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							} catch (TooManyListenersException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
-						System.out.println(x);
+			breakOut: while (true) {
+				//System.out.print("scanning inputs: ");
+				//@SuppressWarnings("rawtypes")
+//				Enumeration portList = CommPortIdentifier.getPortIdentifiers();
+//				while (portList.hasMoreElements()) {
+//					CommPortIdentifier portId = (CommPortIdentifier) portList
+//							.nextElement();
+//					if (portId.getPortType() == CommPortIdentifier.PORT_SERIAL) {
+//						String x = portId.getName();
+//						if (x.equals(com)) {
+//							// reconnected.
+//							try {
+//								portConnect(portId);
+//								connected=true;
+//								thread.destroy();
+//								//break breakOut;
+//							} catch (PortInUseException e) {
+//								// TODO Auto-generated catch block
+//								e.printStackTrace();
+//							} catch (IOException e) {
+//								// TODO Auto-generated catch block
+//								e.printStackTrace();
+//							} catch (UnsupportedCommOperationException e) {
+//								// TODO Auto-generated catch block
+//								e.printStackTrace();
+//							} catch (TooManyListenersException e) {
+//								// TODO Auto-generated catch block
+//								e.printStackTrace();
+//							}
+//						}
+//						System.out.print(x+ "; ");
+//					}
+//				}
+//				System.out.println("");
+				System.out.println(com + " checking inputs;");
+				portId = AvalComs.checkComs(com);
+				try {
+					if(portId!=null){ //if the comm exists
+						portConnect(portId);
+						break breakOut;
 					}
+				} catch (PortInUseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (UnsupportedCommOperationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (TooManyListenersException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 				try {
 					Thread.sleep(1000);
@@ -157,24 +194,27 @@ public class SerialDriver implements SerialPortEventListener {
 
 		}
 	};
-
+public void reconnectToArd(){
+	thread= new Thread(reconnect);
+	thread.start();
+	port.close();
+}
 	@Override
 	synchronized public void serialEvent(SerialPortEvent serialEvent) {
 		boolean error = false;
 		try {
 			inStr.available();
 		} catch (IOException e) {
+			
 			System.out.println("IO EXCEPTION - Disconnected from arduino");
+			//System.out.println("EXCEPTION SUBCLASS NAME: "+ .getClass().getName());
 			error = true;
-			thread = new Thread(reconnect);
-			thread.start();
+			//thread = new Thread(reconnect);
+		//	thread.start();
 			port.close();
 			System.out.println("AFTER CLOSE");
-			// port=null;
-			// port = null;
-
-			// port.
 		}
+		
 		if (error == false) {
 			if (serialEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
 				if(debug){
@@ -195,7 +235,7 @@ public class SerialDriver implements SerialPortEventListener {
 						}
 					}
 					//if listener is enabled and we've gotten 4 packets...
-					if(se!=null && buffer.size()>4){
+					if(se!=null && buffer.size()>5){
 						//call serial listener
 						se.serialListener();
 					}
