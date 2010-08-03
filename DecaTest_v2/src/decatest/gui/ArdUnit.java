@@ -45,7 +45,7 @@ public class ArdUnit implements DacPacketEvent {
 		this.id = id;
 		dt.fill(139, 137, 137);
 		dt.rect(x1, y1, width, height);
-		dt.cp5.addTextlabel("ard1", "Ard" + id, x1 + 2, y1 + 2);
+		dt.cp5.addTextlabel("ard1", "Ard:" + com, x1 + 2, y1 + 2);
 		dt.cp5.addButton("btn", 0, x1 + 3, y1 + height - 15, width / 2, 10)
 				.setId(this.id);
 		dt.fill(238, 238, 224);
@@ -63,12 +63,13 @@ public class ArdUnit implements DacPacketEvent {
 		System.out.println("Ard id# " + id + " event handled");
 		// sLight.setStatus(Status.RED);
 		try {
-			sLink.writeData(0xAC);
+			//sLink.writeData(0xAC);
+			( sLink.getDacCon() ).sd.killPort();
 		} catch (NullPointerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (NotConnectedException e) {
-			sLight.setStatus(Status.RED);
+	//	} catch (NotConnectedException e) {
+		//	sLight.setStatus(Status.RED);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

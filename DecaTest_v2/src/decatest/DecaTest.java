@@ -10,6 +10,7 @@ import controlP5.ControlP5;
 import controlP5.Textarea;
 import decatest.SerialLink.ConStat;
 import decatest.gui.ArdUnit;
+import decatest.serial.AvalComs;
 //import processing.app.Preferences;
 import processing.core.PApplet;
 
@@ -28,7 +29,7 @@ public class DecaTest extends PApplet {
 	private LinkedList ards = new LinkedList();
 	private static final int screenWidth = 1000;
 	private static final int screenHeight = 800;
-	private Thread init;
+	//private Thread init;
 	private Textarea textbox;
 	public Textarea getTextBox(){return textbox;}
 	private Thread t2;
@@ -44,9 +45,14 @@ public class DecaTest extends PApplet {
 				(screenWidth / 3), screenHeight / 2 + 5);
 		// textbox.showScrollbar();
 		textbox.enableColorBackground();
-		ards.add(new ArdUnit(this, "COM3", 10, 20));
-		ards.add(new ArdUnit(this,"COM14", 140,20));
-		ards.add(new ArdUnit(this,"COM11", 10,100));
+		//start checking for available arduinos
+		AvalComs.startPolling();
+		ards.add(new ArdUnit(this, "COM12", 10,		20 ));
+		ards.add(new ArdUnit(this, "COM3", 	10, 	100));
+		//further investigate the watchdog timers going off
+		ards.add(new ArdUnit(this, "COM14", 140,	20 ));
+		ards.add(new ArdUnit(this, "COM15", 140,	100));
+		
 		
 		initGUIs();
 		t2 = new Thread(initSerialConnection);

@@ -18,15 +18,19 @@ import gnu.io.UnsupportedCommOperationException;
 public class SerialDriver implements SerialPortEventListener {
 	private static final boolean debug=false;
 	InputStream inStr;
+	public void setInputStream(InputStream is){inStr=is;}
 	OutputStream outStr;
+	public void setOutputStream(OutputStream os){outStr=os;}
 	// byte buffer[] = new byte[32768];
 	int bufferIndex;
 	int bufferLast;
 	SerialPort port;
+	public void setPort(SerialPort p){port=p;}
 	int rate;
-	int parity;
-	int databits;
-	int stopbits;
+	public int getRate(){return rate;}
+	static final int parity =SerialPort.PARITY_NONE;
+	static final int databits=8;
+	static final int stopbits=SerialPort.STOPBITS_1;
 	String com;
 	public String getCom(){return com;}
 	static int numTimesInPortConnect = 0;
@@ -42,7 +46,7 @@ public class SerialDriver implements SerialPortEventListener {
 	public SerialDriver(Serial_Event se, String com, int rate) {
 		this.se=se;
 		//aCom=new AvalComs();
-		AvalComs.startPolling();
+		
 		sInit(com,rate);
 		
 	}
@@ -50,9 +54,6 @@ public class SerialDriver implements SerialPortEventListener {
 		//System.out.println("SerialDriver Init");
 		this.com = com;
 		this.rate = rate;
-		this.parity = SerialPort.PARITY_NONE;
-		this.databits = 8;
-		stopbits = SerialPort.STOPBITS_1;
 		buffer = new LinkedList<Byte>();
 		try {
 			port = null;
@@ -74,7 +75,7 @@ public class SerialDriver implements SerialPortEventListener {
 //			}
 			CommPortIdentifier portId = AvalComs.checkComs(this.com);
 			if(portId!=null){ //if the comm exists
-				portConnect(portId);
+				portConnect(portId, this);
 			}
 		} catch (PortInUseException e) {
 			// throw new SerialException("Serial port '" + iname +
@@ -97,27 +98,34 @@ public class SerialDriver implements SerialPortEventListener {
 			connected = true;
 		}
 	}
-
-	synchronized private void portConnect(CommPortIdentifier portId)
+static boolean pause=false;
+	synchronized static private void portConnect(CommPortIdentifier portId, SerialDriver sd )
 			throws PortInUseException, IOException,
 			UnsupportedCommOperationException, TooManyListenersException {
-		port = null;
+		sd.setPort(null);
 		// portId.removePortOwnershipListener("Serializationlol");
 		// portId.
+		
+		pause=true;
 		System.out.print("IN PORT CONNECT. port.open; ");
-		port = (SerialPort) portId.open("Serializationlol" + numTimesInPortConnect,
-				2000);
+		SerialPort tempPort = (SerialPort) portId.open("Serializationlol",2000);
+		
 		System.out.print("port.getIn; ");
-		inStr = port.getInputStream();
+		sd.setInputStream(tempPort.getInputStream());
 		System.out.print("port.getout; ");
-		outStr = port.getOutputStream();
-		System.out.print("port.restOfIt; ");
-		port.setSerialPortParams(rate, databits, stopbits, parity);
-		port.addEventListener(this);
-		port.notifyOnDataAvailable(true);
-		numTimesInPortConnect++;
+		sd.setOutputStream(tempPort.getOutputStream());
+		System.out.println("port.restOfIt; ");
+		tempPort.setSerialPortParams(sd.getRate(), databits, stopbits, parity);
+		tempPort.addEventListener(sd);
+		tempPort.notifyOnDataAvailable(true);
+		
+		sd.setPort(tempPort);
+		pause=false;
+		
 	}
-
+private SerialDriver getThis(){
+	return this;
+}
 	private Runnable reconnect = new Runnable() {
 		public void run() {
 			CommPortIdentifier portId;
@@ -168,7 +176,7 @@ public class SerialDriver implements SerialPortEventListener {
 				portId = AvalComs.checkComs(com);
 				try {
 					if(portId!=null){ //if the comm exists
-						portConnect(portId);
+						portConnect(portId,getThis() );
 						break breakOut;
 					}
 				} catch (PortInUseException e) {
@@ -191,17 +199,35 @@ public class SerialDriver implements SerialPortEventListener {
 					e1.printStackTrace();
 				}
 			}
-
+			error = false;
 		}
 	};
 public void reconnectToArd(){
+	error=true;
+	
 	thread= new Thread(reconnect);
 	thread.start();
-	port.close();
+	try{
+		port.notifyOnDataAvailable(false);
+		port.removeEventListener();
+		port.close();
+		port=null;
+	}catch(NullPointerException e){
+		System.out.println(com+" is trying to close a port that is already closed.");
+	}
 }
+/**
+ * for testing purposes only
+ */
+public void killPort(){
+	port.close();
+	port=null;
+}
+boolean error = false;
 	@Override
 	synchronized public void serialEvent(SerialPortEvent serialEvent) {
-		boolean error = false;
+		//error=false;
+		
 		try {
 			inStr.available();
 		} catch (IOException e) {
@@ -212,10 +238,10 @@ public void reconnectToArd(){
 			//thread = new Thread(reconnect);
 		//	thread.start();
 			port.close();
-			System.out.println("AFTER CLOSE");
+		//	System.out.println("AFTER CLOSE");
 		}
 		
-		if (error == false) {
+		if (!error && !pause) {
 			if (serialEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
 				if(debug){
 					System.out.println("");

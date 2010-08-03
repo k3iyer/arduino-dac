@@ -89,13 +89,12 @@ public class DacConnection implements Serial_Event {
 			curData[i] = sd.readInt();
 		}
 		int lastBit = sd.readInt();
-		System.out.println(sd.getCom()+ "---Last Bit of packetMode is: "+ lastBit);
+		//System.out.println(sd.getCom()+ "---Last Bit of packetMode is: "+ lastBit);
 		if (lastBit == 255) {// end of packet value which we should
 									// receive. if not dont create a packet
 			switch (packetMode) {
 			case 1:// watchdog
 				parent.onWatchDogData(new WatchDogPacket(curData));
-				
 				break;
 			default:
 				System.out.println("INVALID PACKET MODE");

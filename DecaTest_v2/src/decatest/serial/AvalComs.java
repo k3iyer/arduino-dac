@@ -20,47 +20,63 @@ public abstract class AvalComs {// implements Runnable {
 	static Thread t;
 	static int charles = 0;
 	static boolean alreadyActive = false;
+//	static boolean pause = true;
 
+//	static public void setPause(boolean p) {
+//		pause = p;
+//	}
+public static boolean getThreadState(){
+	return alreadyActive;
+}
 	synchronized static public void startPolling() {
 		charles++;
 		if (!alreadyActive) {
-			alreadyActive=true;
+			
 			coms = new LinkedList<CommPortIdentifier>();
 			// System.out.println("AvalComs Init("+ charles+")");
+			alreadyActive = true;
 			t = new Thread(r);
 			t.start();
+			
 		}
 	}
-
+public static Thread getCommCheckingThread(){
+	return t;
+}
 	static Runnable r = new Runnable() {
 		@Override
 		public void run() {
 			System.out.println("AvalComs Run(" + charles + ")");
 			// TODO Auto-generated method stub
 			while (true) {
-				System.out.print("scanning inputs: ");
-				synchronized (coms) {
-					coms = new LinkedList<CommPortIdentifier>();
-					boolean breakFlag;
-					Enumeration portList = CommPortIdentifier
-							.getPortIdentifiers();
-					while (portList.hasMoreElements()) {
-						CommPortIdentifier portId = (CommPortIdentifier) portList
-								.nextElement();
-						breakFlag = false;
-						if (portId.getPortType() == CommPortIdentifier.PORT_SERIAL) {
-							coms.add(portId);
+//				if (!pause) {
+					System.out.print("scanning inputs: ");
+					synchronized (coms) {
+						coms = new LinkedList<CommPortIdentifier>();
+						//boolean breakFlag;
+						Enumeration portList = CommPortIdentifier
+								.getPortIdentifiers();
+						while (portList.hasMoreElements()) {
+							CommPortIdentifier portId = (CommPortIdentifier) portList
+									.nextElement();
+							//breakFlag = false;
+							
+							if (portId.getPortType() == CommPortIdentifier.PORT_SERIAL) {
+								coms.add(portId);
+							}
 						}
-					}
+//					}
+					dataAv = true;
+					System.out.print("AvailComs: ");
+					printLLStrings(getAllComs());
 				}
-				dataAv = true;
-				printLLStrings(getAllComs());
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+
 			}
 		}
 	};
