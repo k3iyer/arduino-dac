@@ -23,7 +23,7 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/rxtx/RXTXcomm.jar">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="DecaTest_v2/lib/rxtx/win32"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="DecaTest_v2_checkouttest/lib/rxtx/win32"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/rxtx/win32/rxtxSerial.dll"/>

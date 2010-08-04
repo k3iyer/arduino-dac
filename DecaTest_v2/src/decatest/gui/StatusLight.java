@@ -19,6 +19,7 @@ public class StatusLight {
 		this.dt=dt;
 	}
 	public void setStatus(Status status){
+		st=status;
 		switch (status){
 		case GREEN:
 			dt.fill(50,205,50);

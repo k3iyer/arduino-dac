@@ -7,6 +7,8 @@ import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.TooManyListenersException;
 
+import decatest.gui.StatusLight;
+
 
 import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
@@ -39,12 +41,14 @@ public class SerialDriver implements SerialPortEventListener {
 	volatile LinkedList<Byte> buffer;
 	Thread thread;
 	Serial_Event se;
+	//StatusLight statusLight;
 	//static AvalComs aCom;
-	public SerialDriver(String com, int rate) {
-		sInit(com,rate);
-	}
+//	public SerialDriver(String com, int rate) {
+//		sInit(com,rate);
+//	}
 	public SerialDriver(Serial_Event se, String com, int rate) {
 		this.se=se;
+		//this.statusLight=sl;
 		//aCom=new AvalComs();
 		
 		sInit(com,rate);
@@ -99,6 +103,29 @@ public class SerialDriver implements SerialPortEventListener {
 		}
 	}
 static boolean pause=false;
+/**
+ * need to pass in itself since this only forwards the command to the static method
+ * 
+ * @param pID
+ * @throws PortInUseException
+ * @throws IOException
+ * @throws UnsupportedCommOperationException
+ * @throws TooManyListenersException
+ */
+private void portConnect1(CommPortIdentifier pID) throws PortInUseException, IOException, UnsupportedCommOperationException, TooManyListenersException{
+	portConnect(pID, this);
+}
+/**
+ * Had issues with this method not being static or synchronized.  Only one thread is allowed in here at a time
+ * because we were originally having issues with the drivers not being able to support
+ * multiple threads trying to connect at the same time. 
+ * @param portId
+ * @param sd  --this needs to use a lot of class variables - pass in this
+ * @throws PortInUseException  ---something else is already using this port.
+ * @throws IOException
+ * @throws UnsupportedCommOperationException 
+ * @throws TooManyListenersException  ---multiple listeners attached to the same object
+ */
 	synchronized static private void portConnect(CommPortIdentifier portId, SerialDriver sd )
 			throws PortInUseException, IOException,
 			UnsupportedCommOperationException, TooManyListenersException {
@@ -107,25 +134,22 @@ static boolean pause=false;
 		// portId.
 		
 		pause=true;
-		System.out.print("IN PORT CONNECT. port.open; ");
+		System.out.print("com: "+ sd.getCom() + "IN PORT CONNECT. port.open; ");
 		SerialPort tempPort = (SerialPort) portId.open("Serializationlol",2000);
-		
 		System.out.print("port.getIn; ");
 		sd.setInputStream(tempPort.getInputStream());
 		System.out.print("port.getout; ");
 		sd.setOutputStream(tempPort.getOutputStream());
 		System.out.println("port.restOfIt; ");
 		tempPort.setSerialPortParams(sd.getRate(), databits, stopbits, parity);
-		tempPort.addEventListener(sd);
-		tempPort.notifyOnDataAvailable(true);
+		tempPort.addEventListener(sd); //tell the dll where the SerialEvent method is located
+		tempPort.notifyOnDataAvailable(true); //driver will call the serialEvent method on dataAv
 		
 		sd.setPort(tempPort);
 		pause=false;
 		
 	}
-private SerialDriver getThis(){
-	return this;
-}
+
 	private Runnable reconnect = new Runnable() {
 		public void run() {
 			CommPortIdentifier portId;
@@ -176,7 +200,8 @@ private SerialDriver getThis(){
 				portId = AvalComs.checkComs(com);
 				try {
 					if(portId!=null){ //if the comm exists
-						portConnect(portId,getThis() );
+						portConnect1(portId);
+						connected=true;
 						break breakOut;
 					}
 				} catch (PortInUseException e) {

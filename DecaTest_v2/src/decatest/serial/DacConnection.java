@@ -2,6 +2,7 @@ package decatest.serial;
 
 import java.io.IOException;
 
+import decatest.gui.StatusLight;
 import decatest.serial.packet.DacPacket;
 import decatest.serial.packet.DacPacketEvent;
 //need a method to cross reference the packet type bit with the buffer size
