@@ -70,42 +70,51 @@ public class DacConnection implements Serial_Event {
 	//int origStartByte;
 
 	@Override
-	public void serialListener() {
+	public void serialListener(int endPacketLoc) {
 		// TODO Auto-generated method stub
 		System.out.println(sd.getCom()+"---DAC_CON Serial Listener called");
 		int startByte;
+		//read the first byte and subract 1 from the end packet location as it has just moved
 		startByte = sd.readInt();
-		while ((startByte & 0x000000F0) >>> 4 != 0xA) { // until the higher 4 bits of the start
-									// packet = 0xA
-			if (sd.available() == 0) { // stuck in a while loop here - add
-										// an exit condition
-				break;
-			}
-		}
+		endPacketLoc-=1;
+		//if we do this init search - put the line above this into the while loop
+//		while ((startByte & 0x000000F0) >>> 4 != 0xA) { // until the higher 4 bits of the start packet = 0xA
+//			if (sd.available() == 0) { // stuck in a while loop here -	
+//				break;				  // add an exit condition
+//			}
+//		}
 		// validData = false;
 		// read in the three values
 		byte packetMode = getPacketMode(startByte);
 		System.out.println("PacketMode: "+ packetMode);
-		for (int i = 0; i < packetSize[packetMode]; i++) {
+		
+		int readUntil = endPacketLoc-SerialDriver.endTrans.length;
+		curData = new int[readUntil];
+		for (int i = 0; i < readUntil; i++) {
 			curData[i] = sd.readInt();
 		}
-		int lastBit = sd.readInt();
+		//delete the endTransmit codes from the buffer
+		for(int i = 0; i<SerialDriver.endTrans.length; i++){
+			sd.readInt();
+		}
+		
+		//int lastBit = sd.readInt();
 		//System.out.println(sd.getCom()+ "---Last Bit of packetMode is: "+ lastBit);
-		if (lastBit == 255) {// end of packet value which we should
+	//	if (lastBit == 255) {// end of packet value which we should
 									// receive. if not dont create a packet
 			switch (packetMode) {
 			case 1:// watchdog
 				parent.onWatchDogData(new WatchDogPacket(curData));
 				break;
 			default:
-				System.out.println("INVALID PACKET MODE");
+				System.out.println("INVALID PACKET MODE - SOME SORT OF ERROR OCCURED");
 				break;
 			}
 
-		}else{
+	//	}else{
 			
 			// else incomplete packet. throw it out.
-		}
+		//}
 
 	}
 

@@ -5,6 +5,7 @@ import java.util.Date;
 
 import controlP5.Textarea;
 import decatest.DecaTest;
+import decatest.FileIO;
 import decatest.WatchDog;
 import decatest.gui.StatusLight.Status;
 import decatest.serial.AvalComs;
@@ -28,7 +29,7 @@ public class ArdUnit implements DacPacketEvent {
 	private WatchDog wd;
 	private DacConnection dCon;
 	public volatile ConStat st;
-	
+	private FileIO fio;
 	// Date d;
 	long lastTime = 0;
 	// public Thread t;

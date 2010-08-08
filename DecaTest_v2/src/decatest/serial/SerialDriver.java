@@ -39,6 +39,7 @@ public class SerialDriver implements SerialPortEventListener {
 	boolean monitor = false;
 	public boolean connected = false;
 	volatile LinkedList<Byte> buffer;
+	public static final byte[] endTrans= {(byte) 0xAA,(byte) 0xBB,(byte) 0xCC,(byte) 0xDD};
 	Thread thread;
 	Serial_Event se;
 	//StatusLight statusLight;
@@ -200,6 +201,7 @@ private void portConnect1(CommPortIdentifier pID) throws PortInUseException, IOE
 				portId = AvalComs.checkComs(com);
 				try {
 					if(portId!=null){ //if the comm exists
+						flushLocal();
 						portConnect1(portId);
 						connected=true;
 						break breakOut;
@@ -248,6 +250,9 @@ public void killPort(){
 	port.close();
 	port=null;
 }
+private void flushLocal(){
+	buffer.clear();
+}
 boolean error = false;
 	@Override
 	synchronized public void serialEvent(SerialPortEvent serialEvent) {
@@ -286,9 +291,21 @@ boolean error = false;
 						}
 					}
 					//if listener is enabled and we've gotten 4 packets...
-					if(se!=null && buffer.size()>5){
+					int bufferSize = buffer.size();
+					if(se!=null && bufferSize>5){
+						/**
+						 * 
+						 * 
+						 * ADD CHECK TO SEE HOW LARGE THE INPUT BUFFER IS. 
+						 * IF THE BUFFER IS LARGE WE NEED TO CALL FIND END TRANSMIT UNTIL IT RETURNS -1
+						 * 
+						 */
+						//check for end transmission
+						int endTransLocation = findEndTransmit();
+						if  (endTransLocation != -1) {
+							se.serialListener(endTransLocation);
+						}
 						//call serial listener
-						se.serialListener();
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -299,6 +316,49 @@ boolean error = false;
 			}
 		}
 
+	}
+//private int findEndTransmit(){
+//		int iterateOver = buffer.size() - (buffer.size()-endTrans.length);
+//		int i;
+//		for (i = 0; i<iterateOver; i++){
+//			boolean t=false;
+//			for (int j = 0; j<endTrans.length-1; j++){
+//				if(buffer.get(i+j)==endTrans[j]){
+//					t=true;
+//				}else{
+//					t=false;
+//					break;
+//				}
+//			}
+//			if (t==true) return i;
+//		}
+//		return -1;
+//}
+
+	private int findEndTransmit() {
+		synchronized (buffer) {
+			int iterateOver = buffer.size() - endTrans.length + 1;
+			int i;
+			for (i = 0; i < iterateOver; i++) {
+				boolean t = false;
+				for (int j = 0; j < endTrans.length; j++) {
+					// System.out.println("buffer["+(i+j)+
+					// "]: 0x"+Integer.toHexString(buffer.get(i+j)) +
+					// "\tendTrans["+j+"]: 0x"+Integer.toHexString(endTrans[j]));
+					if (buffer.get(i + j) == endTrans[j]) {
+						// System.out.println("Match at buffer["+(i+j)+ "]: "+
+						// Integer.toHexString(buffer.get(i+j))+";");
+						t = true;
+					} else {
+						//t = false;
+						break;
+					}
+				}
+				if (t == true)
+					return i + endTrans.length;
+			}
+			return -1;
+		}
 	}
 
 	public int available() {

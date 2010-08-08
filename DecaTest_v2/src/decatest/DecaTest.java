@@ -33,11 +33,10 @@ public class DecaTest extends PApplet {
 	public static final int screenHeight = 800;
 	//private Thread init;
 	//private static TextBoxEvents tb;
-	private Thread t2;
+	//private Thread t2;
 
 	@SuppressWarnings("unchecked")
 	public void setup() {
-		getComPorts();
 		size(screenWidth, screenHeight);
 		frameRate(30);
 		//init controlp5 object
@@ -56,27 +55,9 @@ public class DecaTest extends PApplet {
 		
 		
 		initGUIs();
-		t2 = new Thread(initSerialConnection);
-		t2.start();
+		new Thread(initSerialConnection).start();;
+		
 
-	}
-
-	public void getComPorts() {
-		// boolean empty = true;
-
-		try {
-			for (Enumeration enumeration = CommPortIdentifier
-					.getPortIdentifiers(); enumeration.hasMoreElements();) {
-				CommPortIdentifier commportidentifier = (CommPortIdentifier) enumeration
-						.nextElement();
-				if (commportidentifier.getPortType() == CommPortIdentifier.PORT_SERIAL) {
-					// String curr_port =
-					System.out.println(commportidentifier.getName());
-				}
-			}
-		} catch (Exception e) {
-
-		}
 	}
 
 	/**
