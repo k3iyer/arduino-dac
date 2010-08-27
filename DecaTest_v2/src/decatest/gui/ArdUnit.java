@@ -2,6 +2,7 @@ package decatest.gui;
 
 import java.sql.Time;
 import java.util.Date;
+import java.util.LinkedList;
 
 import controlP5.Textarea;
 import decatest.DecaTest;
@@ -35,6 +36,8 @@ public class ArdUnit implements DacPacketEvent {
 	// public Thread t;
 	// private String btnStr;
 	controlP5.Button b;
+	private LinkedList<String[]> bat1Data;
+	private LinkedList<String[]> bat2Data;
 
 	public ArdUnit(DecaTest dt, String str, int x1, int y1) {
 		this.x1 = x1;
@@ -45,6 +48,9 @@ public class ArdUnit implements DacPacketEvent {
 		this.lastTime = System.currentTimeMillis();
 		//this.wd = new WatchDog(sLink.getDacCon().sd);
 		this.st=ConStat.NOT_CONNECTED;
+		this.bat1Data = new LinkedList<String[]>();
+		this.bat2Data = new LinkedList<String[]>();
+		this.fio = new FileIO(com);
 	
 	}
 
@@ -116,18 +122,35 @@ public class ArdUnit implements DacPacketEvent {
 		// TODO Auto-generated method stub
 		System.out.println("**"+com+"**onNewData called");
 	}
-
+	int callCount=0;
 	@Override
 	public void onWatchDogData(WatchDogPacket packet) {
+		
 		// TODO Auto-generated method stub
 
-		System.out.println("**"+ com+ "**-----------onWatchDogData called-------------( tDif: "
-						+ (System.currentTimeMillis() - lastTime)
-						+ ")---("
-						+ packet.time1 + ")----(" + packet.time2 + ")----");
-		System.out.println("**"+ com+ "**-----" + ((packet.time1 << 8) + packet.time2)
-				+ "-----");
-		lastTime = System.currentTimeMillis();
+//		System.out.println("**"+ com+ "**-----------onWatchDogData called-------------( tDif: "
+//						+ (System.currentTimeMillis() - lastTime)
+//						+ ")---("
+//						+ packet.time1 + ")----(" + packet.time2 + ")----");
+//		System.out.println("**"+ com+ "**-----" + ((packet.time1 << 8) + packet.time2)
+//				+ "-----");
+		//lastTime = System.currentTimeMillis();
+		
+		System.out.println("; batID="+packet.batID);
+		if(packet.batID == 0){
+			bat1Data.add(packet.values);
+		}else{
+			bat2Data.add(packet.values);
+		}
+		callCount++;
+		if(callCount >= 100){
+			callCount=0;
+			fio.writeUnitToFile(bat1Data, bat2Data);
+			bat1Data.clear();
+			bat2Data.clear();
+		}
+				
+		//watchdog housekeeping
 		if (wd != null)
 			wd.killTimer();
 		wd = new WatchDog(dCon.sd);

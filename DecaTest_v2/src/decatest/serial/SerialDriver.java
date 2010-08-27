@@ -18,7 +18,7 @@ import gnu.io.SerialPortEventListener;
 import gnu.io.UnsupportedCommOperationException;
 
 public class SerialDriver implements SerialPortEventListener {
-	private static final boolean debug=false;
+	private static final boolean debug=true;
 	InputStream inStr;
 	public void setInputStream(InputStream is){inStr=is;}
 	OutputStream outStr;
@@ -275,7 +275,7 @@ boolean error = false;
 			if (serialEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
 				if(debug){
 					System.out.println("");
-					System.out.print("SerialPort DataEvent");
+					System.out.print("COMMMMMMMMMMMM: " + com + "; SerialPort DataEvent");
 				}
 				try {
 					int av = inStr.available();
@@ -293,17 +293,14 @@ boolean error = false;
 					//if listener is enabled and we've gotten 4 packets...
 					int bufferSize = buffer.size();
 					if(se!=null && bufferSize>5){
-						/**
-						 * 
-						 * 
-						 * ADD CHECK TO SEE HOW LARGE THE INPUT BUFFER IS. 
-						 * IF THE BUFFER IS LARGE WE NEED TO CALL FIND END TRANSMIT UNTIL IT RETURNS -1
-						 * 
-						 */
+						int endTransLocation=0;
+						//create packets until no more packets are available 
+						while(endTransLocation!=-1){
 						//check for end transmission
-						int endTransLocation = findEndTransmit();
-						if  (endTransLocation != -1) {
-							se.serialListener(endTransLocation);
+							endTransLocation = findEndTransmit();
+							if  (endTransLocation != -1) {
+								se.serialListener(endTransLocation);
+							}
 						}
 						//call serial listener
 					}

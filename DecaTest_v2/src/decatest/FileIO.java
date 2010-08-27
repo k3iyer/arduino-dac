@@ -9,11 +9,14 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.StringTokenizer;
 
 public class FileIO {
 	private static final String beginningPart = "data\\";
 	private static final String runCountFileName = "runCount.info";
 	private static final String fileCountFileName = "NumFiles.info";
+	private static final String bat1Folder = "battery1\\";
+	private static final String bat2Folder = "battery2\\";
 	private static final String endl = System.getProperty("line.separator");
 	private String ardID;
 	private String path;
@@ -21,8 +24,8 @@ public class FileIO {
 	// private BufferedWriter writer;
 	private int fileNumber;
 	private File curFileName;
-	private int runCount;
-
+	private static int runCount;
+static boolean initAlready=false;
 	public FileIO(String ardID) {
 		this.ardID = ardID;
 
@@ -31,21 +34,33 @@ public class FileIO {
 		if (!f.exists()) {
 			f.mkdir();
 		}
-		runCount = this.getRunCountFromFile();
+		//initAlready is to prevent the program from creating separate test folders for each arduino
+		if (initAlready==false){
+			runCount = this.getRunCountFromFile();
+			initAlready=true;
+		}
+		
 		// System.out.println(this.getRunCount());
 		path = beginningPart + "Test_" + runCount;
-
+		
 		f = new File(path);
 		if (!f.exists()) {
 			f.mkdir();
 		}
 		path = path + "\\Ard_" + this.ardID + "\\";
-
+		
 		f = new File(path);
 		if (!f.exists()) {
 			f.mkdir();
 		}
-
+		f= new File(path+bat1Folder);
+		if (!f.exists()) {
+			f.mkdir();
+		}
+		f= new File(path+bat2Folder);
+		if (!f.exists()) {
+			f.mkdir();
+		}
 		// curFileName = new File(path + fileCountFileName);
 
 		// int temp = ;
@@ -72,12 +87,18 @@ public class FileIO {
 	// e.printStackTrace();
 	// }
 	// }
-
-	public void writeDataToFile(LinkedList<String[]> strs) {
+public void writeUnitToFile(LinkedList<String[]> bat1, LinkedList<String[]> bat2){
+	writeDataToFile(bat1, this.getCurFile(1));
+	writeDataToFile(bat2, this.getCurFile(2));
+	incSaveToLocFile();
+}
+	public void writeDataToFile(LinkedList<String[]> strs, File f) {
+		System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~WRITING DATA TO FILE!!!!!!!!!!11!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 		// find currentFilenNumber
-		File saveToLoc = this.getCurFile();
+		//File saveToLoc = this.getCurFile(batteryNum);
+		System.out.println("Path to save file: " +f.getAbsolutePath()+"; listSize: "+ strs.size());
 		// update file to point to the next file
-		incSaveToLocFile();
+		//incSaveToLocFile(batteryNum);
 		String writeString = "";
 		// tempTitles:
 		int j;
@@ -91,14 +112,15 @@ public class FileIO {
 			//System.out.print("Length: "+ strArray.length);
 			int i;
 			for (i = 0; i < strArrayLength-1; i++) {
-				System.out.print("; i=" + i);
+			//	System.out.print("; i=" + i);
 				writeString = writeString + strArray[i] + ", ";
 			}
-			System.out.println(" i=" + i);
+			//System.out.println(" i=" + i);
 			writeString = writeString + strArray[i] + endl;
 		}
+		System.out.println(writeString);
 		try {
-			BufferedWriter bw = new BufferedWriter(new FileWriter(saveToLoc));
+			BufferedWriter bw = new BufferedWriter(new FileWriter(f, true));
 			bw.write(writeString);
 			bw.close();
 		} catch (IOException e) {
@@ -108,35 +130,35 @@ public class FileIO {
 
 	}
 
-	private int getCurFileNum() {
-		int returnVal = 0;
-		File f = new File(path + fileCountFileName);
-		if (f.exists()) {
-			returnVal = 1;
-			try {
-				returnVal = readFromFile(curFileName);
-				incNumInFile(curFileName, returnVal);
-				// System.out.println("After buffer writer...");
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		} else {
-			try {
-				writeNumToFile(curFileName, 1);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//	private int getCurFileNum() {
+//		int returnVal = 0;
+//		File f = new File(path + fileCountFileName);
+//		if (f.exists()) {
+//			returnVal = 1;
+//			try {
+//				returnVal = readFromFile(curFileName);
+//				incNumInFile(curFileName, returnVal);
+//				// System.out.println("After buffer writer...");
+//			} catch (FileNotFoundException e) {
+//				e.printStackTrace();
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		} else {
+//			try {
+//				writeNumToFile(curFileName, 1);
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//
+//		}
+//
+//		return returnVal;
+//	}
 
-		}
-
-		return returnVal;
-	}
-
-	private File getCurFile() {
+	private File getCurFile(int batNum) {
 		File f = new File(path + fileCountFileName);
 		File curFile = null;
 		try {
@@ -144,7 +166,8 @@ public class FileIO {
 			if (f.exists()) {
 				fileNumber = readFromFile(f);
 			}
-			curFile = new File(path + "process_" + fileNumber + ".csv");
+			//get the file path(dependent on what battery it pertains to)
+			curFile = new File(path + ((batNum==1) ? bat1Folder : bat2Folder) + "process_" + fileNumber + ".csv");
 		} catch (NumberFormatException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -154,18 +177,24 @@ public class FileIO {
 		}
 		return curFile;
 	}
-
+	
+//CHANGE BATNUM TO REAL THING
 	private void incSaveToLocFile() {
-		File f = new File(path + fileCountFileName);
-		int fileNumber = 0;
-		try {
-			if (f.exists())
-				fileNumber = readFromFile(f);
-			writeNumToFile(f, ++fileNumber);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			File f = new File(path + fileCountFileName);
+			int fileNumber = 1;
+			try {
+				if (f.exists()){
+					fileNumber = readFromFile(f);
+				}else{
+					//file doesnt exist, use default value.
+					System.out.println("NO FILE IN EXISTANCE, CREATING IT");
+				}
+				fileNumber++;
+				writeNumToFile(f, fileNumber);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 	}
 
 	/**
@@ -233,6 +262,79 @@ public class FileIO {
 		f.delete();
 
 	}
+	public static LinkedList parseSchedFile(File sched) throws IOException{
+		BufferedReader br = new BufferedReader(new FileReader(sched));
+		String line=null;
+		LinkedList<SchedEntry> schedule = new LinkedList<SchedEntry>();
+		while((line=br.readLine())!=null){
+			StringTokenizer st = new StringTokenizer(line,",");
+			SchedEntry se = new SchedEntry();
+			se.progName = st.nextToken().trim();
+			se.num2Run  = Integer.parseInt(st.nextToken().trim());
+			schedule.add(se);
+		}
+		
+		return schedule;
+	}
+	/**
+	 * check the inputed list for errors
+	 * checks currently include ensuring there is a program file for each entry
+	 * and ensuring the number of times to run the profile is greater than 0
+	 * @param sched
+	 * @return
+	 */
+	public static int checkSched(LinkedList<SchedEntry> sched){
+		
+		int size = sched.size();
+		for(int line=0; line < size; line++){
+			String fileName = sched.get(line).progName + ".txt";
+			String fileLoc = beginningPart+"program_files\\"+fileName;
+			File testFile = new File(fileLoc);
+			//if the file cannot be read or doesnt exist, return the problem line number
+			if(!testFile.canRead()){
+				System.out.println("can't read file from line# #"+ line);
+				return ++line;
+			}
+			//if the number of times to run is less than 1, return an error
+			if(sched.get(0).num2Run < 1){
+				return ++line;
+			}
+		}
+		//file checks out, return -1 to state it works
+		return -1;
+	}
+	public static LinkedList readProgramFile(File progFile) throws NumberFormatException, IOException{
+		BufferedReader br = new BufferedReader(new FileReader(progFile));
+		String line=null;
+		LinkedList<ProgEntry> program = new LinkedList<ProgEntry>();
+			while((line=br.readLine())!=null){ //blank lines... how does this handle that
+				
+				StringTokenizer commentRemoval = new StringTokenizer(line, "//");
+				//should return the line up to a "//", or the entire line if that isnt present
+				String lineWithoutComment = commentRemoval.nextToken().trim();
+				StringTokenizer st = new StringTokenizer(lineWithoutComment,",");
+				ProgEntry pe = new ProgEntry();
+				pe.transType = Integer.parseInt(st.nextToken().trim());
+				switch(pe.transType){
+				case 0:
+					pe.varType = Integer.parseInt(st.nextToken().trim());
+					break;
+				case 1:
+					pe.varType = Integer.parseInt(st.nextToken().trim());
+					pe.data = Integer.parseInt(st.nextToken().trim());
+					break;
+				case 2:
+					pe.strVal = st.nextToken().trim();
+					break;
+				default:
+					//should never get here
+					break;
+				}
+				program.add(pe);
+			}
+		return program;
+	}
+	
 
 	/*
 	 * methods for jUnit tests to get variables

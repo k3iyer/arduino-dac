@@ -3,6 +3,7 @@ package decatest;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import decatest.gui.TextBoxEvents;
 import decatest.serial.SerialDriver;
 
 public class WatchDog {
@@ -17,13 +18,15 @@ TimerTask tt= new TimerTask(){
 		
 		//if this is not canceled before the time limit, it will enter this run command
 		System.out.println("~~~"+sd.getCom()+"~~~~~~~~~~~~~~~~~~~~~~~PROBLEM. WATCHDOG TIMER WENT OFF");
-	sd.reconnectToArd();
+		TextBoxEvents.println(com+"'s WATCHDOG TRIGGERED!  OH NOESSSSSS");
+		sd.reconnectToArd();
 	}
 	
 };
 	public WatchDog(SerialDriver serial) {
 		//t.schedule(tt, 2000); //run the task in 2 seconds
 		this.sd=serial;
+		this.com=serial.getCom();
 		started=false;
 		t= new Timer();
 	}
@@ -34,6 +37,7 @@ TimerTask tt= new TimerTask(){
 		}
 	}
 	public void startTimer(){
+		//System.out.println("RESTARTING WATCHDOG");
 		started = true;
 		//t=null;
 		//this.killTimer();

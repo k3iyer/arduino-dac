@@ -30,7 +30,7 @@ public class DacConnection implements Serial_Event {
 	public SerialDriver sd;
 	private DacPacketEvent parent;
 
-	static final int[] packetSize = { 0,4,0,0,0,0,0,0,0,0,0,0,0 };
+	//static final int[] packetSize = { 0,4,0,0,0,0,0,0,0,0,0,0,0 };
 
 	public DacConnection(DacPacketEvent wpe, String com) {
 		//System.out.println("DAC Con Init");

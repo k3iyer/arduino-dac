@@ -47,11 +47,12 @@ public class DecaTest extends PApplet {
 		TextBoxEvents.init(cp5);
 		//start checking for available arduinos
 		AvalComs.startPolling();
+		//hard coded arduino units
 		ards.add(new ArdUnit(this, "COM12", 10,		20 ));
-		ards.add(new ArdUnit(this, "COM3", 	10, 	100));
-		//further investigate the watchdog timers going off
-		ards.add(new ArdUnit(this, "COM14", 140,	20 ));
 		ards.add(new ArdUnit(this, "COM15", 140,	100));
+		ards.add(new ArdUnit(this, "COM3", 	10, 	100));
+		ards.add(new ArdUnit(this, "COM14", 140,	20 ));
+		
 		
 		
 		initGUIs();
