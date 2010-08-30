@@ -9,7 +9,11 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.NoSuchElementException;
+import java.util.Scanner;
 import java.util.StringTokenizer;
+
+import decatest.gui.TextBoxEvents;
 
 public class FileIO {
 	private static final String beginningPart = "data\\";
@@ -273,7 +277,7 @@ public void writeUnitToFile(LinkedList<String[]> bat1, LinkedList<String[]> bat2
 			se.num2Run  = Integer.parseInt(st.nextToken().trim());
 			schedule.add(se);
 		}
-		
+		br.close();
 		return schedule;
 	}
 	/**
@@ -303,39 +307,125 @@ public void writeUnitToFile(LinkedList<String[]> bat1, LinkedList<String[]> bat2
 		//file checks out, return -1 to state it works
 		return -1;
 	}
-	public static LinkedList readProgramFile(File progFile) throws NumberFormatException, IOException{
+	static int lineNum = 0;
+
+	public static LinkedList parseProgramFile(File progFile)
+			throws NumberFormatException, NoSuchElementException, IOException {
+		// get number of lines in the file
+		int numLines = numLinesInFile(progFile);
+		// buffered reader for ease of input
 		BufferedReader br = new BufferedReader(new FileReader(progFile));
-		String line=null;
+		String line = null;
+		// location to store the data
 		LinkedList<ProgEntry> program = new LinkedList<ProgEntry>();
-			while((line=br.readLine())!=null){ //blank lines... how does this handle that
-				
+		// for each line in the file, read the line and store it
+		for (int i = 0; i < numLines; i++) {
+			line = br.readLine();
+			lineNum++;
+			log("LineNumber " + lineNum + ": " + line);
+			// if it isn't a blank line or the line isn't a complete comment...
+			if ((line.trim().length() > 0) && (!line.startsWith("//"))) {
 				StringTokenizer commentRemoval = new StringTokenizer(line, "//");
-				//should return the line up to a "//", or the entire line if that isnt present
 				String lineWithoutComment = commentRemoval.nextToken().trim();
-				StringTokenizer st = new StringTokenizer(lineWithoutComment,",");
+				log("Line excluding Comments: " +lineWithoutComment);
+				StringTokenizer st = new StringTokenizer(lineWithoutComment,
+						",");
 				ProgEntry pe = new ProgEntry();
 				pe.transType = Integer.parseInt(st.nextToken().trim());
-				switch(pe.transType){
+				switch (pe.transType) {
+				// basic request - only 2 numbers
 				case 0:
 					pe.varType = Integer.parseInt(st.nextToken().trim());
 					break;
+				// variable update request or profile request
 				case 1:
+				case 2:
 					pe.varType = Integer.parseInt(st.nextToken().trim());
 					pe.data = Integer.parseInt(st.nextToken().trim());
 					break;
-				case 2:
+				// end of test, save data to the file in this string
+				case 16:
 					pe.strVal = st.nextToken().trim();
 					break;
 				default:
-					//should never get here
+					// should never get here
+					System.out.println("UNSUPPORTED TRANSMISSION TYPE");
+					// TextBoxEvents.println("UNSUPPORTED TRANSMISSION TYPE");
 					break;
 				}
 				program.add(pe);
+
+			} else {
+				// blank line
+				log("BLANK LINE");
 			}
+
+		}
+		br.close();
 		return program;
 	}
 	
+	
+	public static int checkProgFile(LinkedList<ProgEntry> PEs){
+		
+		int size = PEs.size();
+		for(int i = 0; i< size; i++){
+			ProgEntry p = PEs.get(i);
+			if (p.transType !=16){
+				if (p.transType>=8 || p.transType < 0){
+					//PROBLEM WITH THIS LINEs TRANS TYPE
+					return ++i;
+				}
+			}
+			switch (p.transType){
+			case 0:
+				if (p.varType>=256 || p.varType < 0){
+					return ++i;
+				}
+				break;
+			case 1:
+			case 2:
+				if (p.varType>=256 || p.varType < 0){
+					return ++i;
+				}
+				if (p.data>=65536 || p.data < 0){
+					return ++i;
+				}
+				break;
+			case 16: 
+				if (p.strVal == null || p.strVal.length() ==0){
+					return ++i;
+				}
+				break;
+			default:
+				//shouldnt get here
+			}			
+		}		
+		return -1;
+	}
+	public static int numLinesInFile(File f){
+		int returnVal= -2;  //if -1 or -2 at the end, there was a problem
+		try {
+			Scanner scanner = new Scanner(f);
+			returnVal=0;
+			//log("Starting count");
+			while(scanner.hasNextLine()){
+				scanner.nextLine();
+				//log("ReturnVal: " + returnVal + ";");
+				returnVal++;
+			}			
+			scanner.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
+		log("Final ReturnVal: " + returnVal + ";");
+		return returnVal;
+	}
+private static void log(String str){
+	System.out.println(str);
+}
 	/*
 	 * methods for jUnit tests to get variables
 	 */

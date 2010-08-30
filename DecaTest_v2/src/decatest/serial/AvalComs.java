@@ -18,42 +18,52 @@ public abstract class AvalComs {// implements Runnable {
 	static int numChecking = 0;
 	static boolean dataAv = false;
 	static Thread t;
-	static int charles = 0;
 	static boolean alreadyActive = false;
 //	static boolean pause = true;
-
 //	static public void setPause(boolean p) {
 //		pause = p;
 //	}
-public static boolean getThreadState(){
-	return alreadyActive;
-}
+	
+	/**
+	 * allows other threads to check if this class is already polling
+	 */
+	public static boolean getThreadState(){
+		return alreadyActive;
+	}
+	/**
+	 * start's the thread and sets already active to true.
+	 */
 	synchronized static public void startPolling() {
-		charles++;
 		if (!alreadyActive) {
-			
 			coms = new LinkedList<CommPortIdentifier>();
-			// System.out.println("AvalComs Init("+ charles+")");
 			alreadyActive = true;
 			t = new Thread(r);
 			t.start();
 			
 		}
 	}
-public static Thread getCommCheckingThread(){
-	return t;
-}
+	
+	/**
+	 * return the thread running this - do not believe this is ever used or needed
+	 * @return
+	 */
+	public static Thread getCommCheckingThread(){
+		return t;
+	}
+	
+	/**
+	 * this is the thread which updates the linked list of comm port identifiers
+	 */
 	static Runnable r = new Runnable() {
 		@Override
 		public void run() {
-			System.out.println("AvalComs Run(" + charles + ")");
-			// TODO Auto-generated method stub
 			while (true) {
 //				if (!pause) {
 					System.out.print("scanning inputs: ");
+					//don't want to be writing to the linked list of another thread is currently reading from it
+					//this is because we wipe the linked list clean each time we run this thread
 					synchronized (coms) {
 						coms = new LinkedList<CommPortIdentifier>();
-						//boolean breakFlag;
 						Enumeration portList = CommPortIdentifier
 								.getPortIdentifiers();
 						while (portList.hasMoreElements()) {
@@ -67,6 +77,7 @@ public static Thread getCommCheckingThread(){
 						}
 //					}
 					dataAv = true;
+					//print avail coms
 					System.out.print("AvailComs: ");
 					printLLStrings(getAllComs());
 				}
@@ -80,7 +91,11 @@ public static Thread getCommCheckingThread(){
 			}
 		}
 	};
-
+/**
+ * input a string containing a com port (like - "COM13"), return the comm port identifier
+ * @param str  - com port name
+ * @return     - if the com port exists on the list, return the associated comm port identifier, else, return null
+ */
 	public static CommPortIdentifier checkComs(String str) {
 		CommPortIdentifier temp, x = null;
 		// System.out.println("IN CHECK COMS");
@@ -93,7 +108,7 @@ public static Thread getCommCheckingThread(){
 				e.printStackTrace();
 			}
 		}
-
+		//don't want to run this code if the linked list is being updated.
 		synchronized (coms) {
 			for (int i = 0; i < coms.size(); i++) {
 				temp = (CommPortIdentifier) (coms.get(i));
@@ -105,7 +120,9 @@ public static Thread getCommCheckingThread(){
 		}
 		return x;
 	}
-
+/**
+ * @return a linked list of strings containing all available com ports
+ */
 	public static LinkedList<String> getAllComs() {
 		LinkedList<String> strs = new LinkedList<String>();
 		synchronized (coms) {
@@ -115,6 +132,10 @@ public static Thread getCommCheckingThread(){
 		}
 		return strs;
 	}
+	/**
+	 * print all the strings in the inputed linked list
+	 * @param strs
+	 */
 
 	private static void printLLStrings(LinkedList<String> strs) {
 		for (String s : strs) {
