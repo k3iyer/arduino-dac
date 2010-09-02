@@ -1,18 +1,12 @@
 package decatest.gui;
 
-import java.sql.Time;
-import java.util.Date;
 import java.util.LinkedList;
 
-import controlP5.Textarea;
 import decatest.DecaTest;
 import decatest.FileIO;
 import decatest.WatchDog;
 import decatest.gui.StatusLight.Status;
-import decatest.serial.AvalComs;
 import decatest.serial.DacConnection;
-import decatest.serial.NotConnectedException;
-import decatest.serial.packet.DacPacket;
 import decatest.serial.packet.DacPacketEvent;
 import decatest.serial.packet.WatchDogPacket;
 
@@ -117,11 +111,7 @@ public class ArdUnit implements DacPacketEvent {
 		}
 	}
 
-	@Override
-	public void onNewData(DacPacket packet) {
-		// TODO Auto-generated method stub
-		System.out.println("**"+com+"**onNewData called");
-	}
+	
 	int callCount=0;
 	@Override
 	public void onWatchDogData(WatchDogPacket packet) {
