@@ -273,8 +273,10 @@ public void writeUnitToFile(LinkedList<String[]> bat1, LinkedList<String[]> bat2
 		while((line=br.readLine())!=null){
 			StringTokenizer st = new StringTokenizer(line,",");
 			SchedEntry se = new SchedEntry();
-			se.progName = st.nextToken().trim();
-			se.num2Run  = Integer.parseInt(st.nextToken().trim());
+			if(st.hasMoreTokens())
+				se.progName = st.nextToken().trim();
+			if(st.hasMoreTokens())
+				se.num2Run  = Integer.parseInt(st.nextToken().trim());
 			schedule.add(se);
 		}
 		br.close();
@@ -335,17 +337,21 @@ public void writeUnitToFile(LinkedList<String[]> bat1, LinkedList<String[]> bat2
 				switch (pe.transType) {
 				// basic request - only 2 numbers
 				case 0:
-					pe.varType = Integer.parseInt(st.nextToken().trim());
+					if(st.hasMoreTokens())
+						pe.varType = Integer.parseInt(st.nextToken().trim());
 					break;
 				// variable update request or profile request
 				case 1:
 				case 2:
-					pe.varType = Integer.parseInt(st.nextToken().trim());
-					pe.data = Integer.parseInt(st.nextToken().trim());
+					if(st.hasMoreTokens())
+						pe.varType = Integer.parseInt(st.nextToken().trim());
+					if(st.hasMoreTokens())
+						pe.data = Integer.parseInt(st.nextToken().trim());
 					break;
 				// end of test, save data to the file in this string
 				case 16:
-					pe.strVal = st.nextToken().trim();
+					if(st.hasMoreTokens())
+						pe.strVal = st.nextToken().trim();
 					break;
 				default:
 					// should never get here
