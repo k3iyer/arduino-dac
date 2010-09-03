@@ -21,7 +21,7 @@ public class StatusLight {
 		this.y1 = y1;
 		this.w = w;
 		this.h = h;
-		this.dt=dt;
+		this.dt=dt;  // To get the fill method to work, you have to tell processing where it was called from (e.g. dt)
 	}
 	public void setStatus(Status status){
 		st=status;

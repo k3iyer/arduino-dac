@@ -60,7 +60,7 @@ public class DecaTest extends PApplet {
 		ards.add(new ArdUnit(this, "COM15", 140,	100));
 		ards.add(new ArdUnit(this, "COM3", 	10, 	100));
 		ards.add(new ArdUnit(this, "COM14", 140,	20 ));
-		
+		//TODO This hard coded value will need to be setup on each PC.
 		
 		//init the 
 		initGUIs();

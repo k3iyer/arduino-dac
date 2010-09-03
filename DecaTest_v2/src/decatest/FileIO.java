@@ -32,9 +32,9 @@ public class FileIO {
 	// private File file;
 	// private BufferedWriter writer;
 	private int fileNumber;
-	private File curFileName;
 	private static int runCount;
 static boolean initAlready=false;
+
 	public FileIO(String ardID) {
 		this.ardID = ardID;
 
@@ -87,7 +87,7 @@ static boolean initAlready=false;
 	}
 	/**
 	 * 
-	 * @param strs - linked list of strings containing the battery data
+	 * @param strs - linked list of strings containing the collected battery data from the test
 	 * @param f - file location to save it to
 	 */
 	public void writeDataToFile(LinkedList<String[]> strs, File f) {
@@ -314,14 +314,14 @@ static boolean initAlready=false;
 			File testFile = new File(fileLoc);
 			if(!testFile.canRead()){
 				System.out.println("can't read file from line# #"+ line);
-				return ++line;
+				return ++line; // if the file did not check out, program returns the line number where there is a problem
 			}
 			//if the number of times to run is less than 1, return an error
 			if(sched.get(0).num2Run < 1){
-				return ++line;
+				return ++line;	// if the file did not check out, program returns the line number where there is a problem
 			}
 		}
-		//file checks out, return -1 to state it works to the caller
+		//if file checks out, return -1 to state it works to the caller
 		return -1;
 	}
 	static int lineNum = 0;
@@ -348,7 +348,7 @@ static boolean initAlready=false;
 			line = br.readLine();
 			lineNum++;
 			log("LineNumber " + lineNum + ": " + line);
-			// if it isn't a blank line or the line isn't a complete comment...
+			// if it isn't a blank line or the line isn't a complete comment then read it in, otherwise skip it
 			if ((line.trim().length() > 0) && (!line.startsWith("//"))) {
 				StringTokenizer commentRemoval = new StringTokenizer(line, "//");
 				String lineWithoutComment = commentRemoval.nextToken().trim();
@@ -361,7 +361,7 @@ static boolean initAlready=false;
 				
 				// basic request - only 2 numbers
 				case 0:
-					if(st.hasMoreTokens())
+					if(st.hasMoreTokens())  // note you cant use nextToken as it could crash if there is no next token.
 						pe.varType = Integer.parseInt(st.nextToken().trim());
 					break;
 				
@@ -403,7 +403,7 @@ static boolean initAlready=false;
 	 * @return
 	 */
 	public static int checkProgFile(LinkedList<ProgEntry> PEs){
-		int size = PEs.size();
+		int size = PEs.size(); //The size of the linked list.
 		for(int i = 0; i< size; i++){
 			ProgEntry p = PEs.get(i);
 			if (p.transType !=16){
