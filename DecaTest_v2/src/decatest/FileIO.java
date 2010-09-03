@@ -21,9 +21,9 @@ import decatest.gui.TextBoxEvents;
  */
 public class FileIO {
 	//constants
-	private static final String beginningPart = "data\\";
-	private static final String runCountFileName = "runCount.info";
-	private static final String fileCountFileName = "NumFiles.info";
+	private static final String beginningPart = "data\\"; 
+	private static final String runCountFileName = "runCount.info"; // contains the number of times the program has run. Used to handle restarts of test and increments files names between tests.
+	private static final String fileCountFileName = "NumFiles.info"; //contains a running counter of the number of csv files saved so far
 	private static final String bat1Folder = "battery1\\";
 	private static final String bat2Folder = "battery2\\";
 	private static final String endl = System.getProperty("line.separator");
