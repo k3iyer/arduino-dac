@@ -8,7 +8,6 @@ import java.util.LinkedList;
 import controlP5.ControlEvent;
 import controlP5.ControlP5;
 import controlP5.Textarea;
-import decatest.gui.ArdUnit;
 import decatest.gui.StatusLight.Status;
 import decatest.gui.TextBoxEvents;
 import decatest.serial.AvalComs;
@@ -16,7 +15,8 @@ import decatest.serial.DacConnection;
 //import processing.app.Preferences;
 import processing.core.PApplet;
 
-/**
+/**This class contains the processing main applet.  
+ * if you are familiar with processing, you will notice the setup/loop methods in here
  * 
  * @author MIGIT
  * 
@@ -31,12 +31,18 @@ public class DecaTest extends PApplet {
 	private LinkedList ards = new LinkedList();
 	public static final int screenWidth = 1000;
 	public static final int screenHeight = 800;
-	//private Thread init;
-	//private static TextBoxEvents tb;
-	//private Thread t2;
 
+/**
+ * The setup method is the first method which is called by the processing core.
+ * This method starts the initilization of the system and creates a linked list of ArdUnits, one for each Arduino connected to the system
+ * 
+ * NOTE: THE FIRST ARDUNIT DEFINED (AND CONNECTED TO) WILL NOT SUPPORT A RECONNECT - THE ACT OF RECONNECTING WILL CRASH THE JVM
+ * THE TEMPORARY FIX FOR THIS IS TO SET THE FIRST ONE IN THE ArdUnit ARRAY TO A BLUETOOTH COM OR ATTACH AN EXTRA ARDUINO TO THE SYSTEM
+ * WHICH WOULD REMAIN IDLE FOR THE DURATION OF THE TESTS.
+ */
 	@SuppressWarnings("unchecked")
 	public void setup() {
+		//init screen size and the frame rate
 		size(screenWidth, screenHeight);
 		frameRate(30);
 		//init controlp5 object
@@ -47,14 +53,16 @@ public class DecaTest extends PApplet {
 		TextBoxEvents.init(cp5);
 		//start checking for available arduinos
 		AvalComs.startPolling();
-		//hard coded arduino units
+		
+		//hard coded arduino units and the top left hand corner 
+		//of where to place the dark grey boxes on the screen
 		ards.add(new ArdUnit(this, "COM12", 10,		20 ));
 		ards.add(new ArdUnit(this, "COM15", 140,	100));
 		ards.add(new ArdUnit(this, "COM3", 	10, 	100));
 		ards.add(new ArdUnit(this, "COM14", 140,	20 ));
 		
 		
-		
+		//init the 
 		initGUIs();
 		new Thread(initSerialConnection).start();;
 		
@@ -69,6 +77,9 @@ public class DecaTest extends PApplet {
 		public void run() {
 			
 			TextBoxEvents.println("Serial init method starting ");
+			
+			//for each loops dont work in the processing environment and templates
+			//also dont work, so this method was made "processing proof"
 			//for (ArdUnit au : ards) {
             for (int j =0; j<ards.size(); j++){
                 ArdUnit au= (ArdUnit)ards.get(j);
@@ -76,6 +87,8 @@ public class DecaTest extends PApplet {
 				TextBoxEvents.println("Connecting to Arduino on : " + au.getCom());
 				String textInBox = TextBoxEvents.getContents();
 				int counter = 0;
+				//this next while loop puts a variable length of dots next to the connecting text 
+				//so the user knows the program is working.
 				while (au.st == ArdUnit.ConStat.NOT_CONNECTED) {
 					// enter connecting status code here
 					String temp = "";
@@ -83,8 +96,6 @@ public class DecaTest extends PApplet {
 						temp += ".";
 					}
 					TextBoxEvents.setText(textInBox + temp);
-					//System.out.println(textInBox + temp);
-
 					counter++;
 					if (counter >= 4)
 						counter = 0;
@@ -96,7 +107,7 @@ public class DecaTest extends PApplet {
 						e.printStackTrace();
 					}
 				}
-				// textbox.setText(textInBox);
+				//once it's out of the not connected state, add text to the console inside the program informing the user of the status
 				if (au.st == ArdUnit.ConStat.PROBLEM) {
 					// send out a warning
 					TextBoxEvents.println("Problem connecting to arduino on: "
@@ -109,27 +120,24 @@ public class DecaTest extends PApplet {
 		}
 	};
 	
+	/**
+	 * draw the ardUnit dark grey boxes on the gui
+	 */
 	private void initGUIs() {
-		// fill(0, 0, 0);
-		// rect((screenWidth / 3) * 2 - 3, 2, (screenWidth / 3), screenHeight /
-		// 2 + 5);
+		
 		for (int x = 0; x < ards.size(); x++) {
 			((ArdUnit)(ards.get(x))).drawGUI(x);
 		}
 	}
-public void draw() {
-      //  System.out.print("k");
-           int i=0;
-          i=i+1;
-	}
+
 	public void controlEvent(ControlEvent theEvent) {
-		// theEvent.controller().id
+		//route the event to the correct ard unit.  note that when there are mutliple buttons this will end up being slightly more complex!
 		((ArdUnit)(ards.get(theEvent.controller().id()))).bEvent();
 		// System.out.println("Event Handled: " + theEvent.controller().name());
 	}
 
 	
-
+//this is to turn it from a applet to a java application, but it seems to cause it to go full screen
        // public static void main(String _args[]) {
 	//	PApplet.main(new String[] { this.class.getName() });
 	//}

@@ -1,5 +1,9 @@
 package decatest;
-
+/**
+ * pure data class for a single program entry
+ * @author MIGIT
+ *
+ */
 public class ProgEntry {
 	public ProgEntry() {
 	}

@@ -14,8 +14,13 @@ import java.util.Scanner;
 import java.util.StringTokenizer;
 
 import decatest.gui.TextBoxEvents;
-
+/**
+ * This class is responsible for all fileIO
+ * @author MIGIT
+ *
+ */
 public class FileIO {
+	//constants
 	private static final String beginningPart = "data\\";
 	private static final String runCountFileName = "runCount.info";
 	private static final String fileCountFileName = "NumFiles.info";
@@ -38,91 +43,76 @@ static boolean initAlready=false;
 		if (!f.exists()) {
 			f.mkdir();
 		}
-		//initAlready is to prevent the program from creating separate test folders for each arduino
+		//initAlready is to prevent the program from creating separate test folders for each connected arduino
+		//(this class is instantiated more than once, so this is required)
 		if (initAlready==false){
 			runCount = this.getRunCountFromFile();
 			initAlready=true;
 		}
-		
-		// System.out.println(this.getRunCount());
+		//amend path
 		path = beginningPart + "Test_" + runCount;
-		
+		//path exist? if not, make it exist!
 		f = new File(path);
 		if (!f.exists()) {
 			f.mkdir();
 		}
 		path = path + "\\Ard_" + this.ardID + "\\";
-		
+		//path exist? if not, make it exist!
 		f = new File(path);
 		if (!f.exists()) {
 			f.mkdir();
 		}
+		//path exist? if not, make it exist!
 		f= new File(path+bat1Folder);
 		if (!f.exists()) {
 			f.mkdir();
 		}
+		//path exist? if not, make it exist!
 		f= new File(path+bat2Folder);
 		if (!f.exists()) {
 			f.mkdir();
 		}
-		// curFileName = new File(path + fileCountFileName);
-
-		// int temp = ;
-		// if (temp != 0) {
-		// fileNumber = temp;
-		// }
+		
 	}
 
-	// public void openFile() {
-	// file = new File(path + "entry_" + fileNumber + ".csv");
-	// try {
-	// writer = new BufferedWriter(new FileWriter(file, true));
-	// } catch (IOException e) {
-	// // TODO Auto-generated catch block
-	// e.printStackTrace();
-	// }
-	// }
-
-	// public void amendCurrentFile(String str) {
-	// try {
-	// writer.write(str);
-	// } catch (IOException e) {
-	// // TODO Auto-generated catch block
-	// e.printStackTrace();
-	// }
-	// }
-public void writeUnitToFile(LinkedList<String[]> bat1, LinkedList<String[]> bat2){
-	writeDataToFile(bat1, this.getCurFile(1));
-	writeDataToFile(bat2, this.getCurFile(2));
-	incSaveToLocFile();
-}
+	/**
+	 * This method is called by the code to write both batteries data to a file.
+	 * @param bat1
+	 * @param bat2
+	 */
+	public void writeUnitToFile(LinkedList<String[]> bat1, LinkedList<String[]> bat2){
+		writeDataToFile(bat1, this.getCurFile(1));
+		writeDataToFile(bat2, this.getCurFile(2));
+		incSaveToLocFile();
+	}
+	/**
+	 * 
+	 * @param strs - linked list of strings containing the battery data
+	 * @param f - file location to save it to
+	 */
 	public void writeDataToFile(LinkedList<String[]> strs, File f) {
+		//debug text
 		System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~WRITING DATA TO FILE!!!!!!!!!!11!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-		// find currentFilenNumber
-		//File saveToLoc = this.getCurFile(batteryNum);
 		System.out.println("Path to save file: " +f.getAbsolutePath()+"; listSize: "+ strs.size());
-		// update file to point to the next file
-		//incSaveToLocFile(batteryNum);
 		String writeString = "";
-		// tempTitles:
+		// tempTitles - once we have the packet format in place we'll know what to hard code to this section:
 		int j;
 		for (j = 0; j < strs.get(0).length - 1; j++) {
 			writeString = writeString + "DataPoint" + j + ",";
 		}
 		writeString = writeString + "DataPoint" + j + endl;
-
+		//grab one string array at a time from the linked list of string arrays and make one gigantic string out of it
 		for (String[] strArray : strs) {
 			int strArrayLength = strArray.length;
-			//System.out.print("Length: "+ strArray.length);
 			int i;
 			for (i = 0; i < strArrayLength-1; i++) {
-			//	System.out.print("; i=" + i);
 				writeString = writeString + strArray[i] + ", ";
 			}
-			//System.out.println(" i=" + i);
 			writeString = writeString + strArray[i] + endl;
 		}
+		//test code - print it to the screen.
 		System.out.println(writeString);
+		//output it to the file and close the file
 		try {
 			BufferedWriter bw = new BufferedWriter(new FileWriter(f, true));
 			bw.write(writeString);
@@ -161,7 +151,14 @@ public void writeUnitToFile(LinkedList<String[]> bat1, LinkedList<String[]> bat2
 //
 //		return returnVal;
 //	}
-
+	/**
+	 * Check the number of times we've ran the program and return a file object
+	 * for the NEXT location to save data too 
+	 * 
+	 * input the battery number - we only
+	 * want to increment this counter every other time it is called and
+	 * depending on the battery number it will be saved to different places
+	 */
 	private File getCurFile(int batNum) {
 		File f = new File(path + fileCountFileName);
 		File curFile = null;
@@ -203,7 +200,7 @@ public void writeUnitToFile(LinkedList<String[]> bat1, LinkedList<String[]> bat2
 
 	/**
 	 * change to private after jUnit tests will need resume code
-	 * 
+	 * note: is this even used anymore?
 	 * @return
 	 */
 	public int getRunCountFromFile() {
@@ -234,7 +231,13 @@ public void writeUnitToFile(LinkedList<String[]> bat1, LinkedList<String[]> bat2
 
 		return ++returnVal;
 	}
-
+/**
+ * read the first int from the inputed file
+ * @param f
+ * @return
+ * @throws NumberFormatException
+ * @throws IOException
+ */
 	private int readFromFile(File f) throws NumberFormatException, IOException {
 		int returnVal;
 		BufferedReader br = new BufferedReader(new FileReader(f));
@@ -243,7 +246,12 @@ public void writeUnitToFile(LinkedList<String[]> bat1, LinkedList<String[]> bat2
 		br.close();
 		return returnVal;
 	}
-
+/**
+ * increment the number in the file
+ * @param f
+ * @param num
+ * @throws IOException
+ */
 	private void incNumInFile(File f, int num) throws IOException {
 		BufferedWriter bw = (new BufferedWriter(new FileWriter(f)));
 		Integer tempInt = num + 1;
@@ -257,7 +265,9 @@ public void writeUnitToFile(LinkedList<String[]> bat1, LinkedList<String[]> bat2
 		bw.write(i.toString());
 		bw.close();
 	}
-
+/**
+ * dont think this is used yet
+ */
 	public void clearSettingsAndData() {
 
 		File f = new File(beginningPart + runCountFileName);
@@ -266,6 +276,12 @@ public void writeUnitToFile(LinkedList<String[]> bat1, LinkedList<String[]> bat2
 		f.delete();
 
 	}
+	/**
+	 * This method will parse a scheduler file and return a linked list of SchedEntries to whatever called it
+	 * @param sched
+	 * @return
+	 * @throws IOException
+	 */
 	public static LinkedList parseSchedFile(File sched) throws IOException{
 		BufferedReader br = new BufferedReader(new FileReader(sched));
 		String line=null;
@@ -290,13 +306,12 @@ public void writeUnitToFile(LinkedList<String[]> bat1, LinkedList<String[]> bat2
 	 * @return
 	 */
 	public static int checkSched(LinkedList<SchedEntry> sched){
-		
 		int size = sched.size();
 		for(int line=0; line < size; line++){
+			//this next part is checking to see if the program file named in the schedule actually exists
 			String fileName = sched.get(line).progName + ".txt";
 			String fileLoc = beginningPart+"program_files\\"+fileName;
 			File testFile = new File(fileLoc);
-			//if the file cannot be read or doesnt exist, return the problem line number
 			if(!testFile.canRead()){
 				System.out.println("can't read file from line# #"+ line);
 				return ++line;
@@ -306,11 +321,19 @@ public void writeUnitToFile(LinkedList<String[]> bat1, LinkedList<String[]> bat2
 				return ++line;
 			}
 		}
-		//file checks out, return -1 to state it works
+		//file checks out, return -1 to state it works to the caller
 		return -1;
 	}
 	static int lineNum = 0;
-
+	/**
+	 * This method parses a program file.  It excludes comments and parses the files based on the transition type
+	 * 
+	 * @param progFile - file object belonging to the progFile
+	 * @return linked list of ProgEntries 
+	 * @throws NumberFormatException
+	 * @throws NoSuchElementException
+	 * @throws IOException
+	 */
 	public static LinkedList parseProgramFile(File progFile)
 			throws NumberFormatException, NoSuchElementException, IOException {
 		// get number of lines in the file
@@ -335,11 +358,13 @@ public void writeUnitToFile(LinkedList<String[]> bat1, LinkedList<String[]> bat2
 				ProgEntry pe = new ProgEntry();
 				pe.transType = Integer.parseInt(st.nextToken().trim());
 				switch (pe.transType) {
+				
 				// basic request - only 2 numbers
 				case 0:
 					if(st.hasMoreTokens())
 						pe.varType = Integer.parseInt(st.nextToken().trim());
 					break;
+				
 				// variable update request or profile request
 				case 1:
 				case 2:
@@ -348,6 +373,7 @@ public void writeUnitToFile(LinkedList<String[]> bat1, LinkedList<String[]> bat2
 					if(st.hasMoreTokens())
 						pe.data = Integer.parseInt(st.nextToken().trim());
 					break;
+				
 				// end of test, save data to the file in this string
 				case 16:
 					if(st.hasMoreTokens())
@@ -371,9 +397,12 @@ public void writeUnitToFile(LinkedList<String[]> bat1, LinkedList<String[]> bat2
 		return program;
 	}
 	
-	
+	/**
+	 * check the program file for errors.  not very robust but it does some very small tests on the inputted progentry array
+	 * @param PEs
+	 * @return
+	 */
 	public static int checkProgFile(LinkedList<ProgEntry> PEs){
-		
 		int size = PEs.size();
 		for(int i = 0; i< size; i++){
 			ProgEntry p = PEs.get(i);
@@ -407,8 +436,14 @@ public void writeUnitToFile(LinkedList<String[]> bat1, LinkedList<String[]> bat2
 				//shouldnt get here
 			}			
 		}		
+		//return -1 to tell the caller we've passed the test
 		return -1;
 	}
+	/**
+	 * Finds the number of lines in a file
+	 * @param f  - file to check the number of lines of
+	 * @return  the number of lines in the inputed file
+	 */
 	public static int numLinesInFile(File f){
 		int returnVal= -2;  //if -1 or -2 at the end, there was a problem
 		try {

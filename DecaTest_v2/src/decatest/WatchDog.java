@@ -6,16 +6,25 @@ import java.util.TimerTask;
 import decatest.gui.TextBoxEvents;
 import decatest.serial.SerialDriver;
 
+/**
+ * watchdog/heartbeat class. if this doesnt get "stroked" within 5 seconds of
+ * the previous stroke, it will attempt to reconnect to the arduino in question
+ * 
+ * @author MIGIT
+ * 
+ */
 public class WatchDog {
 Timer t;
 boolean started;
 String com;
 SerialDriver sd;
+	/*
+	 * the timer task is a task that has a delay before executing. if we don't
+	 * stop this timer before the set value, the watchdog event is triggered
+	 */
 TimerTask tt= new TimerTask(){
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
-		
 		//if this is not canceled before the time limit, it will enter this run command
 		System.out.println("~~~"+sd.getCom()+"~~~~~~~~~~~~~~~~~~~~~~~PROBLEM. WATCHDOG TIMER WENT OFF");
 		TextBoxEvents.println(com+"'s WATCHDOG TRIGGERED!  OH NOESSSSSS");
@@ -23,50 +32,32 @@ TimerTask tt= new TimerTask(){
 	}
 	
 };
+/**
+ * create it
+ * @param serial
+ */
 	public WatchDog(SerialDriver serial) {
-		//t.schedule(tt, 2000); //run the task in 2 seconds
 		this.sd=serial;
 		this.com=serial.getCom();
 		started=false;
 		t= new Timer();
 	}
+	/**
+	 * kill it
+	 */
 	public void killTimer(){
 		if(started){
 			started=false;
 			t.cancel();
 		}
 	}
+	/**
+	 * start it
+	 */
 	public void startTimer(){
-		//System.out.println("RESTARTING WATCHDOG");
 		started = true;
-		//t=null;
-		//this.killTimer();
-		
 		t= new Timer();
-		t.schedule(tt, 5000); //run the task in 2 seconds
+		t.schedule(tt, 5000); //run the task in 5 seconds
 	}
-	/*WatchDog x = new WatchDog();
-	
-	public static void main(String args[]){
-		//	x.startTimer();
-		new Thread(r).start();
-		System.out.println("started");
-	}
-	Runnable r = new Runnable(){
-		public void run(){
-			for(int i = 0; i<=10; i++){
-				System.out.println("i: "+ i);
-				//x.killTimer();
-				x.startTimer();
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			System.out.println("Last one now");
-			x.startTimer();
-		}
-	};*/
+
 }

@@ -1,5 +1,9 @@
 package decatest.serial.packet;
-
+/**
+ * data class the dacConnection creates these packets and passes them to the next highest layer (in our case, the ardUnit)
+ * @author MIGIT
+ *
+ */
 public class WatchDogPacket{// extends DacPacket {
 	public int id;
 	public int mode;

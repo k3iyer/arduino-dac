@@ -1,34 +1,40 @@
-package decatest.gui;
+package decatest;
 
 import java.util.LinkedList;
 
-import decatest.DecaTest;
-import decatest.FileIO;
-import decatest.WatchDog;
+import decatest.gui.StatusLight;
 import decatest.gui.StatusLight.Status;
 import decatest.serial.DacConnection;
 import decatest.serial.packet.DacPacketEvent;
 import decatest.serial.packet.WatchDogPacket;
 
+/**
+ * There is one of these classes for each arduino we are connected to. All
+ * incoming packets and button events eventually get here for processing
+ * 
+ * @author MIGIT
+ * 
+ */
 public class ArdUnit implements DacPacketEvent {
+	
 	public enum ConStat{
 		CONNECTED, NOT_CONNECTED, PROBLEM;
 	}
+	//location of the boxes to draw and the ID number associated with this ardunit
 	private int x1, y1, id;
+	//height and width of the boxes to draw
 	private static final int width = 125;
 	private final static int height = 75;
+	//parent object
 	private DecaTest dt;
 	private StatusLight sLight;
-	//public SerialLink sLink;
+	//com belonging to this ardUnit
 	private String com;
 	private WatchDog wd;
 	private DacConnection dCon;
 	public volatile ConStat st;
 	private FileIO fio;
-	// Date d;
 	long lastTime = 0;
-	// public Thread t;
-	// private String btnStr;
 	controlP5.Button b;
 	private LinkedList<String[]> bat1Data;
 	private LinkedList<String[]> bat2Data;
@@ -38,9 +44,7 @@ public class ArdUnit implements DacPacketEvent {
 		this.y1 = y1;
 		this.dt = dt;
 		this.com = str.toUpperCase();
-		// d=new Date();
 		this.lastTime = System.currentTimeMillis();
-		//this.wd = new WatchDog(sLink.getDacCon().sd);
 		this.st=ConStat.NOT_CONNECTED;
 		this.bat1Data = new LinkedList<String[]>();
 		this.bat2Data = new LinkedList<String[]>();
@@ -48,6 +52,12 @@ public class ArdUnit implements DacPacketEvent {
 	
 	}
 
+	/**
+	 * draw this ardUnit's gui elements and set the ID to the inputed number.
+	 * this ID is used for routing button events
+	 * 
+	 * @param id
+	 */
 	public void drawGUI(int id) {
 		this.id = id;
 		dt.fill(139, 137, 137);
@@ -59,24 +69,22 @@ public class ArdUnit implements DacPacketEvent {
 		sLight = new StatusLight(dt, x1 + width - 12, y1 + 2, 10, 10);
 		sLight.setStatus(Status.DISABLED);
 	}
-
+	/**
+	 * instatiate the dacConnection which will start a connection to the arduino. 
+	 * also start the gui updater thread to update the lights on the screen
+	 */
 	public void SerialConnect() {
 		dCon= new DacConnection(this, com);
-		//sLink = new SerialLink(this, sLight, com);
 		new Thread(guiUpdater).start();
-		// t.start();
 	}
-	//private Runnable connectToArduino = new Runnable(){
+	/**
+	 * status light updating thread - one per ardUnit - should refactor this to be a single thread updating all of them
+	 */
 	private Runnable guiUpdater = new Runnable(){
 	@Override
 		public void run() {
 			//System.out.println("In Run Command");
-			// TODO Auto-generated method stub
-			// set light to connecting
 			sLight.setStatus(Status.YELLOW);
-			
-			//dCon=new DacConnection(ar, com);
-			//myPort = new SerialDriver(com, 115200);
 			while (true) {
 				if (dCon.sd.connected) {
 					sLight.setStatus(Status.GREEN);
@@ -94,17 +102,18 @@ public class ArdUnit implements DacPacketEvent {
 			}
 		}
 		};
+		/**
+		 * button handler.  if the button controller calls this method then we have a button event for this ardUnit
+		 *THIS CURRENTLY ONLY CONTAINS TEST CODE!
+		 */
 	public void bEvent() {
 		System.out.println("Ard id# " + id + " event handled");
-		// sLight.setStatus(Status.RED);
 		try {
 			//sLink.writeData(0xAC);
 			dCon.sd.killPort();
 		} catch (NullPointerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-	//	} catch (NotConnectedException e) {
-		//	sLight.setStatus(Status.RED);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -115,9 +124,9 @@ public class ArdUnit implements DacPacketEvent {
 	int callCount=0;
 	@Override
 	public void onWatchDogData(WatchDogPacket packet) {
+		//This commented out code prints out the time elapsed from the arduinos 
+		//perspective and the java program perspective if setup on the arduino in question
 		
-		// TODO Auto-generated method stub
-
 //		System.out.println("**"+ com+ "**-----------onWatchDogData called-------------( tDif: "
 //						+ (System.currentTimeMillis() - lastTime)
 //						+ ")---("
@@ -132,6 +141,8 @@ public class ArdUnit implements DacPacketEvent {
 		}else{
 			bat2Data.add(packet.values);
 		}
+		// currently it outputs to a file once every 100 times this is called (50 points per battery
+		// eventually needs to be switched to if we read in a 16 as a transType from the program file
 		callCount++;
 		if(callCount >= 100){
 			callCount=0;
@@ -150,7 +161,6 @@ public class ArdUnit implements DacPacketEvent {
 	}
 
 	public String getCom() {
-		// TODO Auto-generated method stub
 		return com;
 	}
 }

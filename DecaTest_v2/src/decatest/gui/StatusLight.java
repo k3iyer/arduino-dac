@@ -1,11 +1,16 @@
 package decatest.gui;
 
 import decatest.DecaTest;
-
+/**
+ * the status light class is exactly what it sounds like - it manages the fake LEDs on the screen
+ * @author MIGIT
+ *
+ */
 public class StatusLight {
 	private int x1, y1, w, h;
 	private Status st;
 	private DecaTest dt;
+	//note: blink not implemented yet.
 	public enum Status {
 		GREEN, RED, YELLOW, BLINK, DISABLED;
 	}
