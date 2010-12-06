@@ -1,0 +1,42 @@
+
+**** 08/12/10 18:51:27 ******* PSpice 16.2.0 (Oct 2008) ******* ID# 0 ********
+
+ ** Profile: "SCHEMATIC1-sim"  [ S:\BATTERY RESEARCH\schematics\hybrid battery-PSpiceFiles\SCHEMATIC1\sim.sim ] 
+
+
+ ****     CIRCUIT DESCRIPTION
+
+
+******************************************************************************
+
+
+
+
+** Creating circuit file "sim.cir" 
+** WARNING: THIS AUTOMATICALLY GENERATED FILE MAY BE OVERWRITTEN BY SUBSEQUENT SIMULATIONS
+
+*Libraries: 
+* Profile Libraries :
+* Local Libraries :
+* From [PSPICE NETLIST] section of C:\Software\Cadence\SPB_16.2\tools\PSpice\PSpice.ini file:
+.lib "nom.lib" 
+
+*Analysis directives: 
+.TRAN  0 10ms 0 
+.STEP LIN PARAM V2 1000 20000 1 
+.PROBE V(alias(*)) I(alias(*)) W(alias(*)) D(alias(*)) NOISE(alias(*)) 
+.INC "..\SCHEMATIC1.net" 
+
+
+
+**** INCLUDING SCHEMATIC1.net ****
+* source HYBRID BATTERY
+R_R1         N00579 0 10K
+R_R2         N00562 N00579 10K
+V_V2         N00562 0 DC 0Vdc AC 1Vac 
+C_C1         N00579 N00562 3.33nF
+
+**** RESUMING sim.cir ****
+.END
+
+ERROR -- Undefined parameter: V2
