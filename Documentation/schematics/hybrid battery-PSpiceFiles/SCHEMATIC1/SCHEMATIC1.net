@@ -1,0 +1,5 @@
+* source HYBRID BATTERY
+R_R1         N00579 0 10K
+R_R2         N00562 N00579 10K
+V_V2         N00562 0 DC 0Vdc AC 1Vac 
+C_C2         N00562 N00579  3.3n  TC=0,0 
