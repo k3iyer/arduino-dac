@@ -200,7 +200,7 @@ if (trigger_flag == 1)
 
    //// NON-TIMING CRITICAL FUNCTIONS////
     fan_controller();
-    serial_monitor();
+//    serial_monitor();
     display_updater();
     
     shift ^=B10000000; // toggle the hertbeat output every loop
@@ -209,7 +209,8 @@ if (trigger_flag == 1)
   
   //// ONE SECOND EXECUTION ////
   if (second_timer == 0) // if ch1 is enabled then when the current sample is 0 (this will happen once a secondafter the tenth sample has been taken) average the array, update wH counter, SOC meter, broadcast the results.
-    {
+    {    
+      serial_monitor(); 
     //// ONE SECOND EXECUTION FOR ENABLED CHANNELS ONLY ////
       for(int channel=0; channel<2; channel++)
         {
