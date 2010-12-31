@@ -7,16 +7,16 @@
 void initalize_ADC(void) {
   digitalWrite(ADC_SELPIN,LOW); //Select adc begin conversation
   byte commandbits = B10100000;   // Write A0h
-  shiftOut(PIN_MOSI, PIN_SCK, MSBFIRST, commandbits);  // shit out the first byte
+  shiftOut(PIN_MOSI, PIN_SCK, MSBFIRST, commandbits);  // shift out the first byte
   commandbits = B00000000;   // Write 00h
-  shiftOut(PIN_MOSI, PIN_SCK, MSBFIRST, commandbits);   // shit out the second byte
+  shiftOut(PIN_MOSI, PIN_SCK, MSBFIRST, commandbits);   // shift out the second byte
   digitalWrite(ADC_SELPIN,HIGH); //de-select adc ending first 16bit convo
 ///// Now that we have "zeroed" out the registers we can write our real init data as Axxxh (write CFR + xxxh) into the device
   digitalWrite(ADC_SELPIN,LOW); //Select adc starting the second 16bit convo
   commandbits = B10101000;   // Write Axh
-  shiftOut(PIN_MOSI, PIN_SCK, MSBFIRST, commandbits);  // shit out the first byte
+  shiftOut(PIN_MOSI, PIN_SCK, MSBFIRST, commandbits);  // shift out the first byte
   commandbits = B00000000;   // Write xxh
-  shiftOut(PIN_MOSI, PIN_SCK, MSBFIRST, commandbits);   // shit out the second byte
+  shiftOut(PIN_MOSI, PIN_SCK, MSBFIRST, commandbits);   // shift out the second byte
   digitalWrite(ADC_SELPIN,HIGH); //de-select adc ending second 16bit convo 
 } 
 
