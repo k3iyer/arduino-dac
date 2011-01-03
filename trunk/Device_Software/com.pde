@@ -1,240 +1,185 @@
 // Tyler Grandahl
 // 12/11/2010
 // Battery cycler, com.pde
-// This file contains the functions for monitoring for serial data, processing the incomming data, and producing heartbeat serial communications.
+// This file contains the functions for monitoring for serial data, processing the incomming data, and producing heartbeat and ACK serial communications.
+
+
 int test_mode_en = 0; // enables the test mode when set to 1, will cause the system to output a constant ramp data, of one byte frames each loop, looping from 0 to 256 back to 0.
 int test_count = 0;
 int test_dir = 0;
 
-int start_byte = 0;
+#define frame_size 12 // 12 byte fixed rx frame size
+#define ser_rx_buff_size 16  // 16 byte rx serial buffer
 
-#define max_transmission 2 // the highest number of transmission that is currently supported by the system
-const int trans_length[]={0xff,3,5,3}; // the length of bytes that should follow the start byte during transmissions from the PC.
-int waiting = 0; // a flag that is raised when the serial monitor is waiting a loop for more data to make a full transmission. We need this because we cannot guarantuee all data will be there when we first check.
+#define ser_tx_buff_size 32 // 32 byte tx buffer
 
+int ser_rx_buff[ser_rx_buff_size] = {0};
+int rx_buff_used = 0;  // tracks how full the buffer is and where the next byte should go when filling it
 
-#define ser_buff_size 12
-byte ser_buff[ser_buff_size] = {0};
-byte buff_used = 0;
-byte first_byte = 0;
-byte end_byte = 0;
-
-byte msg_lengths[] = {3,5,3}; // defines the transmission lengths for each transmission type
+int ser_tx_buff[ser_tx_buff_size] = {0};
 
 
-void serial_monitor()
-{
-  //Check if there is a waiting flag for serial data.
-  //The waiting flag tells us that we had some data last time but it was not enough to make a full transmission for that start byte
-  //  
-  //if (waiting == 0){
-    
-    
+void serial_rx()
+{   
     // read in serial data from the uart fifo
-    
-    if (buff_used < ser_buff_size){
-      while(Serial.available() >= 1)
+      while((Serial.available() >= 1)&&(rx_buff_used < ser_rx_buff_size))
       {
-        ser_buff[end_byte] = Serial.read();
-        buff_used++;
-        
-        if (end_byte < (ser_buff_size - 1))
-        {
-          end_byte ++;
-        }
-        else
-        {
-          end_byte = 0;
-        }
+        ser_rx_buff[rx_buff_used] = Serial.read();
+        rx_buff_used ++;
       }
-    }
     
-    
-//    // print out the contentse of the serial buffer
-//    for (int i=0; i< ser_buff_size; i++)
+//    // print out the contentse of the serial buffer for my debuggings
+//    for (int i=0; i< ser_rx_buff_size; i++)
 //    {
-//      Serial.write(ser_buff[i]);
+//      Serial.println(ser_buff[i]);
 //    }    
+//    Serial.println("");
+
     
-    
-    // calculate the sum for the checksum
-    
-    int pointer = first_byte; // this is used to loop around the buffer array
-    int temp = 0;  // variable for accumulating the data
-    
-    
-    if (buff_used >= msg_lengths[ser_buff[first_byte]&0x0F])
-    {
-      Serial.println("checksum sum");
+    if (rx_buff_used >= frame_size) // could have a full message check the checksum
+    {  
+//      Serial.print("checksum sum, buff used = ");
+//      Serial.println(rx_buff_used);
       // if there is enough data then check the checksum for the first byte, if there is not enough data then wait one loop.
-      for (int i=0; i < msg_lengths[ser_buff[first_byte]&0x0F]; i++)
+      int temp = 0;
+      
+      for (int i=0; i < frame_size - 1; i++)
       {
-        temp = temp + ser_buff[pointer];
-        Serial.print(temp);
-        Serial.print(" ");
-        Serial.print(i);
-        Serial.print(" ");
-        Serial.println(pointer);
-        
-        if (pointer < (ser_buff_size - 1))
-        {
-          pointer ++;
-        }
-        else
-        {
-          pointer = 0;
-        }      
+        temp = temp + ser_rx_buff[i];   
       }
       
-      //buff_used = buff_used - (msg_lengths[ser_buff[first_byte]&0x0F]);
-      //first_byte=end_byte;
-    }
-    
-    
-    
+      temp=temp%256; // calculate the remainder that should be the checksum
+      
+      if (temp == ser_rx_buff[frame_size - 1])
+      {
+//        Serial.print("Checksum is correct!");
+//        Serial.println(temp);
+        shift_buff(frame_size);
+        
+        //Process incomming serial message
+        switch (ser_rx_buff[0] & 0xF0) {
+          case 1: // basic request
+            switch (ser_rx_buff[1]) {
+                case 0: // stop
+                  system_disable(ser_rx_buff[0] & 0xF0); // disable the system on a specified channel as a 'stop' action
+                  break;
+                case 1: // start
+                  system_enable(ser_rx_buff[0] & 0xF0); // enable the system on specified channel as a 'start' action
+                  break;
+//                case 2: // zeros out the cumulative energy counters
+//
+//                  break;
+//                case 128: // enters test mode
+//
+//                  break;
+//                default: 
+//                  // if nothing else matches, do the default
 
-    
-      
-      
-      
-      
-      
-  // This is the serial code that was used for testing with Gian
-
-  
-//      
-//      start_byte = Serial.read();
-//      Serial.println("byte read");
-//    }
-//    // check and see if we have enough data for a full trans, if we dont then toggle the flag.
-//    // We toggle the flag because if it is 1 then a loop has already passed and if enough data isnt here its a bad start_byte
-//    // if it is 0 then we may just need some more time for the uart to fill the FIFO so lets wait a loop.
-//    if ((start_byte & 0x0F) <= max_transmission){
-//      if (Serial.available() < trans_length[(start_byte & 0x0F)-1]){
-//        Serial.println("waiting is and will change from");
-//        Serial.println(waiting);
-//        if(waiting == 1){
-//          waiting = 0;
-//        }
-//        else{
-//          waiting = 1;
-//        }
-//      }
-//      else{
-//        Serial.println("complete set of data");
-//        // process the data, check the CRC and see if its a legit transmission.
-//        Serial.flush();
-//      }
-//    }
-//    
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  // check for incomming serial data
-
-//   if (Serial.available() > 0) 
-//     {
-//        // read the incoming byte:
-//        int uart = Serial.read(); 
-//    
-//        switch (uart & 0xF) {
-//          case 0:
-//          test_mode_en = 0;
-//            //Basic Request
-////            Serial.println("Basic Request");
-////            switch(uart & 0x0F){
-////              case 0:
-////                // a stop request
-////                Serial.println("case 0!");
-////                test_mode_en = 0;
-////                break;
-////              case 5:
-////                // a test mode enable request
-////                Serial.println("case 5!");
-////                test_mode_en = 1;
-////                break;
-////              default:
-////              Serial.println("unsupported basic request");
-////            }
+              }
+            break;
+          case 2: // profile request
+            current_profile[ser_rx_buff[0] & 0xF0] = ser_rx_buff[1]; // sets the correst profile to be run
+            counter_reset(ser_rx_buff[0] & 0xF0); // resets the step clock on that channel
+            system_enable(ser_rx_buff[0] & 0xF0); // enables the channel
+            break;
+//          case 3: // variable update
 //            break;
-//          case 1:
-//            //Variable update transmission
-//            Serial.println("variable update request");
-//            break;
-//          case 2:
-//            //Profile request
-//            Serial.println("profile request");
-//            break;
-//          case 5:
-//            Serial.println("send into test mode");
-//            test_mode_en = 1;
+//          case 4: // user profile update
 //            break;
 //          default: 
-//            // if nothing else matches, it must not be supported for a Host PC -> Arduino command
-//            Serial.println("unsupported request");
-//        }
-
-             
-//        //    //            int channel = 0;
-//        //    //            
-//        //    //            switch (request) 
-//        //    //              {
-//        //    //              case 49: //1 in ASCII
-//        //    //              
-//        //    //              ////NOTE: it may be usefull to compile the following instructoins into a function for starting a new profile, will have to see how the serial monitor develops out....
-//        //    //              
-//        //    //              // if we recieve an instruction to start a new profile, enable the channel and copy the profile in that channels array in RAM
-//        //    //              //profile_updater(channel, profile);
-//        //    //              current_profile[channel] = 64;
-//        //    //              counter_reset(channel);
-//        //    //              step_update(channel,current_profile[channel],step_number[channel]); // request that the current step data be updates with the specificed (channel#, profile#, step#).
-//        //    //              copy_check(channel); //print the updated step so I can watch
-//        //    //              system_enable(channel);
-//        //    //              
-//        //    //              //NOTE: also need to set the channel system status to BUSY!!!
-//        //    //              
-//        //    //              break;
-//        //    //                
-//        //    //              case 50: //2 in ASCII
-//        //    //              channel_enable[0] = 0;
-//        //    //              channel_enable[1] = 0;
-//        //    //                break;
-//        //    //              case 51: //3 in ASCII
-//        //    //              channel_enable[0] = 1;
-//        //    //                break;
-//        //    //              case 52: //4 in ASCII
-//        //    //              channel_enable[1] = 1;
-//        //    //                break;
-//        //    //              }
+            // if nothing else matches, do the default
+            // default is optional
+        }
+        
+        // BEGIN ACK TRANSMISSION
+        ser_tx_buff[0] = 11; // send out a header byte with 11 to indicate this is an ACK message
+        ser_tx_buff[1] = ser_rx_buff[frame_size - 1]; // send back the checksum being acknowledged
+        serial_tx(2); // request the first two bytes be sent
+        // END OF TRANSMISSION   
+      }
+      else
+      {
+//        Serial.println("Checksum error!");
+//        Serial.println(temp);
+        shift_buff(1);
+      }
+    }
+}
 
 
+void shift_buff(int num) // function that shifts up the serial working buffer a number of bytes sent as an argument
+{
+  for (int i=0; i < ser_rx_buff_size - num; i++)
+  {
+    ser_rx_buff[i] = ser_rx_buff[i+num];
+  }
+  rx_buff_used = (rx_buff_used - num);
+}
+
+
+void serial_tx(int tx_length) // transmitts the serial tx buffer, calculates and attaches a checksum.
+{
+  int checksum = 0; // temp var for doing the checksum calc
+  for (int i=0; i< tx_length; i++)
+  {
+    checksum = checksum + ser_tx_buff[i]; // calculate the sum of the transmission
+  }
+  checksum=checksum%256; // calculate the remainder to get the checksum
+  for (int i=0; i<tx_length; i++) // transmit all requested data from the tx buffer
+  {
+    Serial.write(ser_tx_buff[i]);
+  }
+  Serial.write(checksum); // transmit the checksum to finish the transmission  
+}
+
+
+// notes for making the heartbeat.
+// int input_data[2][7] = {0}; // stores the averaged samples of data collected from the ADC before broadcasting, also stores cumulative energy in value 4(in mWHrs).  { mV, mA, cell temp, chamber temp, cum energy, load temp, charge temp}
+// int current_profile[2];  // Stores the current profile number to be running on each channel // Note: convert to unsigned char? (for numbers 0 to 255) 
+// int step_number[2]; // keeps track of the step number we are on for a particular profile, gets incremented as we hit limit conditions.
+// int system_status[2] = {0}; // stores the system status of each channel, 0 is idle, 1 is active, 2+ is a fault, the vaule of the system status is also the fault code...
+// long step_time[2]; // counts 0.1S increments for triggering step time limits, gets reset for every new profile.
+
+void tx_heartbeat(int channel) // will transmit a heartbeat message for the channel specified in the argument 0 or 1.
+{
+    switch (system_status[channel]) {
+    case 0:  // channel is idle
+      ser_tx_buff[0]=((channel << 4)+(0x8));       // header byte, channel shifted left 4 and then anded with an 0x8
+      // Cell temp, chamber temp, upper and then lower
+      ser_tx_buff[1]=(input_data[channel][2] >> 4); // cell temp upper nibble
+      ser_tx_buff[2]=(input_data[channel][2] & 0x0F); // cell temp lower nibble
+      ser_tx_buff[3]=(input_data[channel][3] >> 4); // cell temp upper nibble
+      ser_tx_buff[4]=(input_data[channel][3] & 0x0F); // cell temp lower nibble
+      serial_tx(5); // make the transmission
+      
+      break;
+    case 1:  // channel is active
+      ser_tx_buff[0]=((channel << 4)+(0x9));       // header byte, channel shifted left 4 and then anded with an 0x8
+      ser_tx_buff[1]=(current_profile[channel]); // current profile lowe nibble, should only be an 1 byte var
+      ser_tx_buff[2]=(step_number[channel]); // the current step number
+      ser_tx_buff[3]=(step_time[channel] >> 24); // the step time counter broken up into 8 bit nibbles
+      ser_tx_buff[4]=(step_time[channel] >> 16);
+      ser_tx_buff[5]=(step_time[channel] >> 8);
+      ser_tx_buff[6]=(step_time[channel]);
+      for(int i=0; i<4; i++) // tx all the current input data except for load and charge bank temps.
+      {
+        ser_tx_buff[7+i]=(input_data[channel][i] >> 4); //upper nibble
+        ser_tx_buff[8+i]=(input_data[channel][i] & 0x0F); //lower nibble
+      }
+      serial_tx(17); // make the transmission
+      break;
+    default: // the default state is the fault state, the ID of the system fault is also the fault code
+      ser_tx_buff[0]=((channel << 4)+(0x8));       // header byte, channel shifted left 4 and then anded with an 0x8
+      ser_tx_buff[1]=(system_status[channel]);  // the fault code is also the system status
+      serial_tx(2); // make the transmission
+  }
+}
 
 
 
-//     }
-//     
-//     if(test_mode_en == 1){
-//       if (test_count >= 255){
-//         test_dir = 0;
-//       }
-//       if (test_count <= 0){
-//         test_dir = 1;
-//       }
-//       if (test_dir == 0){
-//         test_count --;
-//       }
-//       else{
-//         test_count ++;
-//       }
-//            //broadcast a hertbeat
-//     Serial.write(test_count);
-//     }
+// NOTE, would it be wise to diable the output processor when test mode is enabled? certainly we need to at least make sure both channels are disabled.
 
+void test_ramp() // creates the ramping signal that can be read in output heartbeats when test mode is enabled.
+{
+  
 }
