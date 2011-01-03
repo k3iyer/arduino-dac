@@ -18,6 +18,7 @@
 //battyer cycler R0.0.2, adds FLASH storage, lots of pains experimenting with 3D arrays, eventually discovered it was because they were too big and poor arduino was running out of SRAM
 //battery cycler R0.0.1, contains basic code to communicate with ADC and DAC, as well as sample data into an array once every 100mS and broadcast the averaged values every 1S.
 //
+#include <EEPROM.h>
 
 #include <Wire.h> // the wire library for I2C interface for the power board temp sensors.
 
@@ -143,6 +144,7 @@ int setup_variables[] = {60, 5, 26, 23, 8, 3, 0}; // an array to hold the variab
       pinMode(shift_latch, OUTPUT);    // setup 595 latch on the analog pin 3
       digitalWrite(shift_latch, LOW);  
 
+      read_setup_vars(); //update the working array of setup variables from what was stored in the EEPROM
       }
        
        
