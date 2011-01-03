@@ -239,6 +239,7 @@ void button_monitor() // sets the trigger flag true every 100mS
             }
           else if (menu_state == 129)  // state 129 is the option to exit the setup menu, thius when selected it resets the state to the first display state.
             {
+              write_setup_vars(); // Note: upon exiting the setup menu we also need to save all the setup variables in case they were changed
               menu_state = 0;
             }
           else        // we must be in a state with a setup variable then so enable editing of it.
@@ -459,3 +460,20 @@ void string_printer(byte string_number, byte array_number)
   lcd.print(buffer);                           
   }
 
+
+
+void write_setup_vars()
+{
+   for (int i=0; i < 6 ; i++)
+  {
+   EEPROM.write(i, setup_variables[i]);
+  }
+}
+
+void read_setup_vars()
+{
+   for (int i=0; i < 6 ; i++)
+  {
+   setup_variables[i] = EEPROM.read(i);
+  }
+}
