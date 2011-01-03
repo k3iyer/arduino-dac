@@ -112,7 +112,7 @@ int set_temp = 0; // the set temp for the thermal chamber
 byte shift = 0; // the holding register that will get pushed to the 595 at the end of every loop. B7{ WD HEARTBEAT | FAULT | Charge Enable | -unused- | MS CH1 | MS CH0 | FAN | TRIAC}B0
 
 int setup_variables[] = {60, 5, 26, 23, 8, 3, 0}; // an array to hold the variables that are configurable through the seyup menu.. varuables are in the following order, 'disp time out', 'disp delay time', 'fan on temp','fan off temp','PID kP','PID kI','PID kD'..
-
+// NOTE: move into eeprom -> EEPROM.write(address, value) address are same as index for setup_variables
 //////////////////////////////////////////////////////////////////////////////
 
       void setup()
@@ -200,7 +200,7 @@ if (trigger_flag == 1)
 
    //// NON-TIMING CRITICAL FUNCTIONS////
     fan_controller();
-//    serial_monitor();
+    serial_rx();
     display_updater();
     
     shift ^=B10000000; // toggle the hertbeat output every loop
@@ -209,14 +209,20 @@ if (trigger_flag == 1)
   
   //// ONE SECOND EXECUTION ////
   if (second_timer == 0) // if ch1 is enabled then when the current sample is 0 (this will happen once a secondafter the tenth sample has been taken) average the array, update wH counter, SOC meter, broadcast the results.
-    {    
-      serial_monitor(); 
+    {
+      tx_heartbeat(0); // make heartbeat transmissions
+      tx_heartbeat(1);
+      
+      
     //// ONE SECOND EXECUTION FOR ENABLED CHANNELS ONLY ////
       for(int channel=0; channel<2; channel++)
         {
         if (channel_enable[channel] == 1) // then sample the ch1 ADC ch1 channels and update the array.
           {
-           print_array(channel); // broadcast the calculated values             
+            
+            // NOTE: currently disabled as it is not needed, was only being used for debug, functionality replaced by serial heartbeat
+            
+//           print_array(channel); // broadcast the calculated values             
           }
         }
     }              
@@ -227,8 +233,6 @@ if (trigger_flag == 1)
 }// end of the loop function
 
 
-
-
  
 void trigger() // sets the trigger flag true every 100mS
 {
@@ -236,10 +240,14 @@ void trigger() // sets the trigger flag true every 100mS
 }
 
 
+ void system_disable(int channel)
+ {
+  channel_enable[channel]=0; // diabel the specified chanel 
+ }
 
  void system_enable(int channel)
  {
-   channel_enable[channel]=1;
+   channel_enable[channel]=1; // enable the specified channel
  }  
  
  
