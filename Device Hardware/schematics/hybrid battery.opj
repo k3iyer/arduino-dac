@@ -24,12 +24,13 @@
     (FileView
       (Path "Design Resources")
       (Path "Design Resources"
-         "S:\BATTERY RESEARCH\schematics\hybrid battery.dsn")
+         "C:\Documents and Settings\tng5461\Desktop\BC SVN Trunk\Device Hardware\schematics\hybrid battery.dsn")
       (Path "Design Resources"
-         "S:\BATTERY RESEARCH\schematics\hybrid battery.dsn" "SCHEMATIC1")
+         "C:\Documents and Settings\tng5461\Desktop\BC SVN Trunk\Device Hardware\schematics\hybrid battery.dsn"
+         "SCHEMATIC1")
       (Select "Design Resources"
-         "S:\BATTERY RESEARCH\schematics\hybrid battery.dsn" "SCHEMATIC1"
-         "PAGE1"))
+         "C:\Documents and Settings\tng5461\Desktop\BC SVN Trunk\Device Hardware\schematics\hybrid battery.dsn"
+         "SCHEMATIC1" "PAGE1"))
     (HierarchyView)
     (Doc
       (Type "COrCapturePMDoc")
