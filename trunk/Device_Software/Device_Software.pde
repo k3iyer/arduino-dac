@@ -51,18 +51,19 @@ LiquidCrystal lcd(9, 10, 5, 6, 7, 8);
 
 
 #define DAC1_SELPIN      6              // DAC1 CS pin
-#define DAC2_SELPIN      6              // DAC2 CS pin
+#define DAC2_SELPIN      6//note should be 7              // DAC2 CS pin
 #define ADC_SELPIN       5             // ADC CS pin
 #define shift_latch      17             // Shift register latch pin, adruino analog pin 3 being used as GPIO
 #define PIN_SCK          13             // SPI clock (also Arduino LED!)
 #define PIN_MISO         12             // SPI data input
 #define PIN_MOSI         11             // SPI data output
-#define testpin          8              // test heartbeat like pin to show 
+
 
 #define pin_ch1_voltage      0              // ch# on the tlc3544
 #define pin_ch1_current      3              //
 #define pin_ch2_voltage      2              //
 #define pin_ch2_current      3              //
+
 #define pin_ch1_cell_temp    0              // ch# in arduino for the megas internal ADC
 #define pin_ch2_cell_temp    1              //
 #define pin_chamber_temp     2              //
