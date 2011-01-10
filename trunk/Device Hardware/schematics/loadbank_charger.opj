@@ -76,20 +76,18 @@
   (MPSSessionName "tng5461")
   (GlobalState
     (FileView
-      (Path "Design Resources"))
+      (Path "Design Resources")
+      (Path "Design Resources"
+         "C:\Documents and Settings\tng5461\Desktop\BC SVN Trunk\Device Hardware\schematics\loadbank_charger.dsn")
+      (Path "Design Resources"
+         "C:\Documents and Settings\tng5461\Desktop\BC SVN Trunk\Device Hardware\schematics\loadbank_charger.dsn"
+         "SCHEMATIC1")
+      (Select "Design Resources"
+         "C:\Documents and Settings\tng5461\Desktop\BC SVN Trunk\Device Hardware\schematics\loadbank_charger.dsn"
+         "SCHEMATIC1" "High side sense"))
     (HierarchyView)
     (Doc
       (Type "COrCapturePMDoc")
       (Frame
-        (Placement "44 0 1 -1 -1 -1 -1 0 200 0 391"))
-      (Tab 0))
-    (Doc
-      (Type "COrSchematicDoc")
-      (Frame
-        (Placement "44 2 3 -1 -1 -4 -30 66 1131 87 512")
-        (Scroll "123 446")
-        (Zoom "122")
-        (Occurrence "/"))
-      (Path "S:\BATTERY RESEARCH\SCHEMATICS\LOADBANK_CHARGER.DSN")
-      (Schematic "SCHEMATIC1")
-      (Page "High side sense"))))
+        (Placement "44 2 3 -1 -1 -4 -30 0 200 0 391"))
+      (Tab 0))))
