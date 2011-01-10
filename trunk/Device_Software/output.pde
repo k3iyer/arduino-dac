@@ -122,26 +122,28 @@ void step_up(int channel)
 
  step_update(channel,current_profile[channel],step_number[channel]); // request that the current step data be updates with the specificed (channel#, profile#, step#).
  
- copy_check(channel); //print the updated step so I can watch
+ // copy_check(channel); //print the updated step so I can watch
  
  system_output[channel] = 0; // reset the system output for a fresh count if we are going to be in constant vontage mode and need to integrate error., not really worth putting this in a conditional statement.
  
+ // watch for the last step of the profile, it is indicated by all 4 values being set to 0.
+ // terminate when seen
  if(current_step[channel][0] ==0 && current_step[channel][1] ==0 && current_step[channel][2] ==0 && current_step[channel][3] ==0)
  {
    channel_enable[channel]=0;
    step_time[channel]=0;
    step_number[channel]=0;
    
-   Serial.print("channel ");
-   Serial.print(channel);
-   Serial.print(" terminated");
+//   Serial.print("channel ");
+//   Serial.print(channel);
+//   Serial.print(" terminated");
+   
    
    /// NOTE: The channel system status should also be set back from busy to idle...
    
  }
 
 }
-
 
 
 

@@ -42,6 +42,7 @@ LiquidCrystal lcd(9, 10, 5, 6, 7, 8);
 
 
 //pin definitions
+#define device_ID        0001          // the unique device ID that helps identify the unit like a MAC addr.
 
 #define upbtn_pin        2             // Pin number the up pushbutton is attached to
 #define selbtn_pin       3             // pin number for the select push button
@@ -101,6 +102,7 @@ int system_output[2] = {0}; // stores the currently desired output current value
 
 int system_status[2] = {0}; // stores the system status of each channel, 0 is idle, 1 is active, 2+ is a fault, the vaule of the system status is also the fault code...
 
+int test_mode_en[2] = {0}; // the enable bits for test mode on each channel.
 // single bit triggers...
 // NOTE: try changing these to boolean to save RAM
 
@@ -207,11 +209,22 @@ if (trigger_flag == 1)
     
     shift ^=B10000000; // toggle the hertbeat output every loop
     shift_register_update();  // update the Shift register...
+    
+    status_monitor(); // update the system status for the next loop, also checks for faults
 
   
   //// ONE SECOND EXECUTION ////
   if (second_timer == 0) // if ch1 is enabled then when the current sample is 0 (this will happen once a secondafter the tenth sample has been taken) average the array, update wH counter, SOC meter, broadcast the results.
     {
+      
+      for (int i=0; i<2; i++) // check if test mode is enabled on any of the channels, if so then run the test generator beofore sending heartbeat
+      {
+        if(test_mode_en[i])
+        {
+          test_generator(i); // update test data
+        }
+      }
+      
       tx_heartbeat(0); // make heartbeat transmissions
       tx_heartbeat(1);
       
@@ -260,7 +273,7 @@ void trigger() // sets the trigger flag true every 100mS
  }
 
 
-//// NOTE: This is currently a horrible mess and is really only good for testing... Go make real serial protocol.....
+
 
 
 
@@ -307,4 +320,18 @@ void fan_controller()  // watches the load bank temperature and toggles the fan 
     shift &= B11111101; // turn the fan off..
   }
 }
-  
+
+void status_monitor() // monitors the system for activity and faults and updates the systems current status accordingly.
+{
+  for (int i=0; i<2; i++)
+  {
+    if (channel_enable[i] == 0)
+    {
+      system_status[i]=0; // if the channel is not enabled it is idle
+    }
+    else if (channel_enable[i] == 1)
+    {
+      system_status[i]=1; // the channel is enabled and thus active
+    }
+  }
+}

@@ -4,10 +4,6 @@
 // This file contains the functions for monitoring for serial data, processing the incomming data, and producing heartbeat and ACK serial communications.
 
 
-int test_mode_en = 0; // enables the test mode when set to 1, will cause the system to output a constant ramp data, of one byte frames each loop, looping from 0 to 256 back to 0.
-int test_count = 0;
-int test_dir = 0;
-
 #define frame_size 12 // 12 byte fixed rx frame size
 #define ser_rx_buff_size 16  // 16 byte rx serial buffer
 
@@ -38,8 +34,6 @@ void serial_rx()
     
     if (rx_buff_used >= frame_size) // could have a full message check the checksum
     {  
-//      Serial.print("checksum sum, buff used = ");
-//      Serial.println(rx_buff_used);
       // if there is enough data then check the checksum for the first byte, if there is not enough data then wait one loop.
       int temp = 0;
       
@@ -47,35 +41,66 @@ void serial_rx()
       {
         temp = temp + ser_rx_buff[i];   
       }
-      
       temp=temp%256; // calculate the remainder that should be the checksum
       
+      
+      // If the checksum is correct process the message
       if (temp == ser_rx_buff[frame_size - 1])
-      {
-//        Serial.print("Checksum is correct!");
-//        Serial.println(temp);
-        shift_buff(frame_size);
-        
+      {     
         //Process incomming serial message
-        switch (ser_rx_buff[0] & 0xF0) {
+        switch (ser_rx_buff[0] & 0x0F) {
           case 1: // basic request
-            switch (ser_rx_buff[1]) {
-                case 0: // stop
-                  system_disable(ser_rx_buff[0] & 0xF0); // disable the system on a specified channel as a 'stop' action
-                  break;
-                case 1: // start
-                  system_enable(ser_rx_buff[0] & 0xF0); // enable the system on specified channel as a 'start' action
-                  break;
-//                case 2: // zeros out the cumulative energy counters
-//
-//                  break;
-//                case 128: // enters test mode
-//
-//                  break;
-//                default: 
-//                  // if nothing else matches, do the default
-
-              }
+            if (ser_rx_buff[1] < 128) // the command can be run regardless of system status
+            {
+              switch (ser_rx_buff[1]) {
+                  case 0: // stop
+                    system_disable(ser_rx_buff[0] & 0xF0); // disable the system on a specified channel as a 'stop' action
+//                    Serial.print("Stop command recieved");
+                    break;
+                  case 1: // start
+                    system_enable(ser_rx_buff[0] & 0xF0); // enable the system on specified channel as a 'start' action
+//                    Serial.print("Start command recieved");
+                    break;
+  //                case 2: // zeros out the cumulative energy counters
+  //
+  //                  break;
+  //                default: 
+  //                  // if nothing else matches, do the default
+                }
+            }
+            else if ((system_status[ser_rx_buff[0] & 0xF0]) == 0) // channel must be idle to run commands 128 and above
+            {
+              switch (ser_rx_buff[1]){
+                  case 128: // toggles test mode
+                  Serial.print("test mode toggled");
+                  if (test_mode_en[ser_rx_buff[0] & 0xF0]==0) // if test mode is currently diabled, then toggle it to enabled
+                  {
+                    Serial.print("test mode enabled");
+                    test_mode_en[ser_rx_buff[0] & 0xF0] = 1;
+                    channel_enable[ser_rx_buff[0] & 0xF0]=1; // mark system as active to run full heartbear
+                    
+                    //Zero out all variables that will be swept
+                    
+                    current_profile[ser_rx_buff[0] & 0xF0] = 0;
+                    step_number[ser_rx_buff[0] & 0xF0] = 0;
+                    step_time[ser_rx_buff[0] & 0xF0] = 0;
+                    for(int i=0; i<4; i++)
+                    {
+                      input_data[ser_rx_buff[0] & 0xF0][i] =0;
+                    }
+                  }
+                  
+                  else{ // assume that test mode was enabled and toggle it to disabled.
+                    Serial.print("test mode disabled");
+                    test_mode_en[ser_rx_buff[0] & 0xF0] = 0;
+                    channel_enable[ser_rx_buff[0] & 0xF0]=0; // set system back to idle
+                  }
+  
+                    break;
+//                  default: 
+//                    // if nothing else matches, do the default
+                }
+            }
             break;
           case 2: // profile request
             current_profile[ser_rx_buff[0] & 0xF0] = ser_rx_buff[1]; // sets the correst profile to be run
@@ -95,7 +120,9 @@ void serial_rx()
         ser_tx_buff[0] = 11; // send out a header byte with 11 to indicate this is an ACK message
         ser_tx_buff[1] = ser_rx_buff[frame_size - 1]; // send back the checksum being acknowledged
         serial_tx(2); // request the first two bytes be sent
-        // END OF TRANSMISSION   
+        // END OF TRANSMISSION
+        
+        shift_buff(frame_size); // end of processing for successful message, can shift the buffer up now.
       }
       else
       {
@@ -178,8 +205,35 @@ void tx_heartbeat(int channel) // will transmit a heartbeat message for the chan
 
 
 // NOTE, would it be wise to diable the output processor when test mode is enabled? certainly we need to at least make sure both channels are disabled.
+// perhaps Test mode should not be included in the final product as it could cause a mess if accediently enabled and implementing safetys to prevent that is not worth the effort
+// when would it be used anyways?
 
-void test_ramp() // creates the ramping signal that can be read in output heartbeats when test mode is enabled.
+void test_generator(int channel) // creates the ramping signal that can be read in output heartbeats when test mode is enabled.
 {
-  
+  if (test_mode_en[channel] >1){
+    if (current_profile[ser_rx_buff[0] & 0xF0] <= 0)
+    {
+      test_mode_en[channel] =1;
+    }
+    current_profile[ser_rx_buff[0] & 0xF0] --;
+    step_number[ser_rx_buff[0] & 0xF0] --;
+    step_time[ser_rx_buff[0] & 0xF0] --;
+    for(int i=0; i<4; i++)
+    {
+      input_data[ser_rx_buff[0] & 0xF0][i] --;
+    }
+  }
+  else{
+    if (current_profile[ser_rx_buff[0] & 0xF0] >=255)
+    {
+      test_mode_en[channel] =2;
+    }
+    current_profile[ser_rx_buff[0] & 0xF0] ++;
+    step_number[ser_rx_buff[0] & 0xF0] ++;
+    step_time[ser_rx_buff[0] & 0xF0] ++;
+    for(int i=0; i<4; i++)
+    {
+      input_data[ser_rx_buff[0] & 0xF0][i] ++;
+    }
+  }
 }
