@@ -1,0 +1,30 @@
+Partlist exported from C:/Documents and Settings/tng5461/Desktop/BC SVN Trunk/Device Hardware/board layout/Battery Cycler Logic Board R0.1/logic board R0.1.sch at 1/12/2011 1:19:19 PM
+
+Qty Value      Device          Parts                                                                                                  
+8              4PIN-HORIZONTAL CH0_TMP,CH0_VOLTAGES,CH0_V_REFS,CH1_TMP,CH1_VOLTAGES,CH1_V_REFS,CHMBR_TMP,I2C_TEMPS             
+1              ARDUINO2009_20  IC1                                                                                                    
+12             C-USC0805       C1,C2,C3,C4,C5,C6,C10,C11,C12,C13,C14,C15                                                   
+1              CPOL-USE7.5-16  C16                                                                                                    
+1              FE08-1          SHIFT_TEST                                                                                             
+1              HDM16216L-5     LCD                                                                                                    
+8              LEDCHIP-LED0805 LED1,LED2,LED3,LED4,LED5,LED6,LED7,LED8                                                         
+9              MA04-1          CH0_REF_TP1,CH0_TMP_TP,CH0_V_TP,CH1_REF_TP1,CH1_TMP_TP,CH1_V_TP,CHMBR_TMP_TP,CONTRAST_EN,I2C_TP
+1              MA05-1          ADC_TEST                                                                                               
+1              MA09-1          SPI_HEADER                                                                                             
+3              PINHD-1X2       5V_SUPPLY,PS_EN,WD_EN                                                                                
+10             R-EU_R0805      R3,R4,R5,R7,R8,R9,R10,R11,R12,R13                                                             
+3              REKN            S1_UP,S2_SEL,S3_DN                                                                                   
+1              TLC3544D        IC2                                                                                                    
+1   0          R-EU_R0805      R6                                                                                                     
+2   0.1u       C-USC0805       C8,C9                                                                                                 
+1   10         R-EU_R0805      R2                                                                                                     
+1   10K        R-EU_R0805      R1                                                                                                     
+1   10u        C-USC0805       C7                                                                                                     
+1   74LS595D   74LS595D        IC4                                                                                                    
+2   74S02D     74S02D          IC5,IC6                                                                                               
+2   AD8210D    AD8210D         IC7,IC8                                                                                               
+2   AD8221     AD8221          U$4,U$5                                                                                               
+1   MAX6370KA  MAX6370KA       U$1                                                                                                    
+2   MCP4822    MCP4822         U$2,U$3                                                                                               
+1   REF198D    REF198D         IC3                                                                                                    
+1   TPPAD1-13Y TPPAD1-13Y      A_REF_TP                                                                                               
