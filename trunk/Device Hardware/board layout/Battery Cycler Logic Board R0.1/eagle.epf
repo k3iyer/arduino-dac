@@ -330,7 +330,7 @@ UsedLibrary="C:/Documents and Settings/tng5461/Desktop/BC SVN Trunk/Device Hardw
 [Win_1]
 Type="Control Panel"
 Loc="63 66 1042 806"
-State=2
+State=1
 Number=0
 
 [Desktop]
