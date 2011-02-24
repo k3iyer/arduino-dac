@@ -10,25 +10,31 @@
 
 /////NOTE: THIS STILL NEEDS SOME SORT OF OUTPUT SCALING (mA to DAC counts...)
 
+
 void output_dac(int channel)
 {
+
+  
   if (channel_enable[channel] == 1)
   {
       if (system_output[channel] >= 0)
       {
-        write_dac(channel, 0, system_output[channel]);/// DAC output ch0 is connected to the load bank...
-        write_dac(channel, 1, 0);/// make sure the charge bank is off.
+        //write_dac(int channel, int A_value, int B_value)
+                        digitalWrite(shift_latch, LOW);
+        write_dac(channel, system_output[channel], 0);/// DAC output chA is connected to the load bank... make sure the charge bank is off.
+                  digitalWrite(shift_latch, HIGH);
+//        write_dac(channel, 1, 0);/// 
       }
       else
       {
-        write_dac(channel, 0, 0);/// make sure the load bank is off. 
-        write_dac(channel, 1, system_output[channel]);/// DAC output ch1 is connected to the charge bank...
+//        write_dac(channel, 0, 0);/// 
+        write_dac(channel, 0, system_output[channel]);/// make sure the load bank is off.  DAC output ch1 is connected to the charge bank...
       }
   }
   else
   {
-        write_dac(channel, 0, 0);/// make sure the load bank is off. 
-        write_dac(channel, 1, 0);/// make sure the charge bank is off.
+        write_dac(channel, 0, 0);/// make sure the load bank is off. make sure the charge bank is off.
+//        write_dac(channel, 1, 0);/// 
   }
   
 }

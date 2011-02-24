@@ -342,13 +342,13 @@ if (menu_state <= 127)  // we are in a status display state, display accordingly
       case 4:
         string_printer(1,0);  // channel 1 Voltage, current, and power
         string_printer(5,0);
-        lcd.print(input_data[1][0]);
+        lcd.print(input_data[1][0]);//read_adc(pin_ch1_voltage));//adc_samples[0][0][0]); //
         lcd.setCursor(0,1);
         string_printer(7,0);
-        lcd.print((input_data[1][0]*input_data[0][1])/1000);
+        //lcd.print((input_data[1][0]*input_data[0][1])/1000);
         lcd.setCursor(7,1);
         string_printer(6,0);
-        lcd.print(input_data[1][1]);
+        lcd.print(input_data[1][1]);//read_adc(pin_ch1_voltage));//adc_samples[0][0][0]); //
         break;
         
        case 2: // channel 0 SOC and Cell temp
