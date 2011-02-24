@@ -208,32 +208,32 @@ void tx_heartbeat(int channel) // will transmit a heartbeat message for the chan
 // perhaps Test mode should not be included in the final product as it could cause a mess if accediently enabled and implementing safetys to prevent that is not worth the effort
 // when would it be used anyways?
 
-void test_generator(int channel) // creates the ramping signal that can be read in output heartbeats when test mode is enabled.
-{
-  if (test_mode_en[channel] >1){
-    if (current_profile[ser_rx_buff[0] & 0xF0] <= 0)
-    {
-      test_mode_en[channel] =1;
-    }
-    current_profile[ser_rx_buff[0] & 0xF0] --;
-    step_number[ser_rx_buff[0] & 0xF0] --;
-    step_time[ser_rx_buff[0] & 0xF0] --;
-    for(int i=0; i<4; i++)
-    {
-      input_data[ser_rx_buff[0] & 0xF0][i] --;
-    }
-  }
-  else{
-    if (current_profile[ser_rx_buff[0] & 0xF0] >=255)
-    {
-      test_mode_en[channel] =2;
-    }
-    current_profile[ser_rx_buff[0] & 0xF0] ++;
-    step_number[ser_rx_buff[0] & 0xF0] ++;
-    step_time[ser_rx_buff[0] & 0xF0] ++;
-    for(int i=0; i<4; i++)
-    {
-      input_data[ser_rx_buff[0] & 0xF0][i] ++;
-    }
-  }
-}
+//void test_generator(int channel) // creates the ramping signal that can be read in output heartbeats when test mode is enabled.
+//{
+//  if (test_mode_en[channel] >1){
+//    if (current_profile[ser_rx_buff[0] & 0xF0] <= 0)
+//    {
+//      test_mode_en[channel] =1;
+//    }
+//    current_profile[ser_rx_buff[0] & 0xF0] --;
+//    step_number[ser_rx_buff[0] & 0xF0] --;
+//    step_time[ser_rx_buff[0] & 0xF0] --;
+//    for(int i=0; i<4; i++)
+//    {
+//      input_data[ser_rx_buff[0] & 0xF0][i] --;
+//    }
+//  }
+//  else{
+//    if (current_profile[ser_rx_buff[0] & 0xF0] >=255)
+//    {
+//      test_mode_en[channel] =2;
+//    }
+//    current_profile[ser_rx_buff[0] & 0xF0] ++;
+//    step_number[ser_rx_buff[0] & 0xF0] ++;
+//    step_time[ser_rx_buff[0] & 0xF0] ++;
+//    for(int i=0; i<4; i++)
+//    {
+//      input_data[ser_rx_buff[0] & 0xF0][i] ++;
+//    }
+//  }
+//}

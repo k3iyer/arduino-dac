@@ -8,7 +8,7 @@
 
 
 void average(int channel)
-{
+{  
   int current_offset[2] = {8192,8192}; // NOTE: // These are calibration values, depending on how we want to do calibration they may need to become global, may also need to add cal coeff.
   int voltage_offset[2] = {0,0};
   
@@ -21,7 +21,7 @@ void average(int channel)
       }
     input_data[channel][i] = accumulator / 10;
     accumulator = 0;
-   }
+   } 
 
 // Prints the averaged raw count for voltage and current, uncomment to use for calibration and debugging.
 
@@ -40,9 +40,16 @@ void average(int channel)
 //Voltage (mV)
 input_data[channel][0] = (input_data[channel][0] - voltage_offset[channel]) / 4;
 
+
 //Current (mA)
-accumulator = (input_data[channel][1] - current_offset[channel]) * 2.5; //Has an offset of -8192 because of the 2.048V ref for 0 // to scale first mult by 2.5
-input_data[channel][1] = accumulator;
+input_data[channel][1] = (input_data[channel][1] - current_offset[channel]);// * 2.5; //Has an offset of -8192 because of the 2.048V ref for 0 // to scale first mult by 2.5
+//input_data[channel][1] = accumulator;
+
+//                Serial.print("avg CH ");
+//    Serial.println(channel);
+//    Serial.println(input_data[channel][0]); // read the voltage and request current
+//        Serial.println(input_data[channel][1]); // request current again and display the current from last request.
+
 
 //Temperatures
 // the sampled data from the internal ADC is still as counts from the 1.1V internal reference. The LM35 outputs 10mV / degC.
@@ -62,11 +69,20 @@ input_data[channel][3] = input_data[channel][3] / 0.93;// chamber temp
 
 void sample(int channel)
 {
-    adc_samples[channel][adc_sample_count[channel]][0] = read_adc(pin_ch1_current);
-    adc_samples[channel][adc_sample_count[channel]][1] = read_adc(pin_ch1_voltage);
+  
     //note that because the read data will be from the commanded channel of the last conversion, 
     //the pins for current and voltage are flipped.. There may be a more elegant way of doing this... 
     //Or the adc_read could just use two conversations and take twice as long...
+  
+    adc_samples[channel][adc_sample_count[channel]][1] = read_adc(pin_ch1_current); // read current and request current again...
+    adc_samples[channel][adc_sample_count[channel]][0] = read_adc(pin_ch1_voltage); // read voltage and request current
+
+
+    
+//                    Serial.print("avg CH ");
+//    Serial.println(channel);
+//    Serial.println(adc_samples[channel][adc_sample_count[channel]][0]); // read the voltage and request current
+//        Serial.println(adc_samples[channel][adc_sample_count[channel]][1]); // request current again and display the current from last request.
     
     adc_samples[channel][adc_sample_count[channel]][2] = analogRead(pin_ch1_cell_temp);
     adc_samples[channel][adc_sample_count[channel]][3] = analogRead(pin_chamber_temp);

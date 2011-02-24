@@ -26,8 +26,18 @@ void initalize_ADC(void) {
 // this function communicates with and samples the TLC3544 ADC
 // It expects a channel number between 0 and 3, as well as a sample count between 0 and the size of the array.
 
-
 int read_adc(int adc_channel){
+  
+  int sample = 0;
+  
+  conversation(adc_channel);
+  sample = conversation(adc_channel);
+  
+  return sample;
+}
+
+
+int conversation(int adc_channel){
 
   byte commandbits;
   

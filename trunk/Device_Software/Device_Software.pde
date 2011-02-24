@@ -51,7 +51,7 @@ LiquidCrystal lcd(9, 10, 5, 6, 7, 8);
 
 
 #define DAC1_SELPIN      6              // DAC1 CS pin
-#define DAC2_SELPIN      6//note should be 7              // DAC2 CS pin
+#define DAC2_SELPIN      7//note should be 7              // DAC2 CS pin
 #define ADC_SELPIN       5             // ADC CS pin
 #define shift_latch      17             // Shift register latch pin, adruino analog pin 3 being used as GPIO
 #define PIN_SCK          13             // SPI clock (also Arduino LED!)
@@ -59,10 +59,10 @@ LiquidCrystal lcd(9, 10, 5, 6, 7, 8);
 #define PIN_MOSI         11             // SPI data output
 
 
-#define pin_ch1_voltage      0              // ch# on the tlc3544
-#define pin_ch1_current      3              //
-#define pin_ch2_voltage      2              //
-#define pin_ch2_current      3              //
+#define pin_ch1_voltage      0              // ch# on the tlc3544 0
+#define pin_ch1_current      2              // 2
+#define pin_ch2_voltage      1              // 1
+#define pin_ch2_current      3              // 3
 
 #define pin_ch1_cell_temp    0              // ch# in arduino for the megas internal ADC
 #define pin_ch2_cell_temp    1              //
@@ -141,8 +141,8 @@ int setup_variables[] = {60, 5, 26, 23, 8, 3, 0}; // an array to hold the variab
       digitalWrite(upbtn_pin, HIGH);  // set pullup on analog pin 2
       pinMode(selbtn_pin, INPUT);
       digitalWrite(selbtn_pin, HIGH);  // set pullup on analog pin 1
-      pinMode(dwnbtn_pin, OUTPUT);
-      digitalWrite(dwnbtn_pin, LOW);  // set pullup on analog pin 0
+      pinMode(dwnbtn_pin, INPUT);
+      digitalWrite(dwnbtn_pin, HIGH);  // set pullup on analog pin 0
       
       pinMode(shift_latch, OUTPUT);    // setup 595 latch on the analog pin 3
       digitalWrite(shift_latch, LOW);  
@@ -156,7 +156,6 @@ void loop()
 {
 if (trigger_flag == 1)
   {
-  digitalWrite(4, HIGH); // first goal post  
   trigger_flag = 0; // reset the trigger flag once we have begun the main loop;
 
   if (second_timer == 9)
@@ -187,9 +186,10 @@ if (trigger_flag == 1)
         }
     }
     
-  //// TIMING CRITICAL FUNCTIONS ////
+  //// TIMING CRITICAL FUNCTIONS ////    
   output_dac(0);
   output_dac(1);
+//        digitalWrite(shift_latch, LOW);  
   bank_temps(); // update the temps of the load and charge banks.
   
   
@@ -209,7 +209,7 @@ if (trigger_flag == 1)
     display_updater();
     
     shift ^=B10000000; // toggle the hertbeat output every loop
-    shift_register_update();  // update the Shift register...
+//    shift_register_update();  // update the Shift register...
     
     status_monitor(); // update the system status for the next loop, also checks for faults
 
@@ -218,13 +218,13 @@ if (trigger_flag == 1)
   if (second_timer == 0) // if ch1 is enabled then when the current sample is 0 (this will happen once a secondafter the tenth sample has been taken) average the array, update wH counter, SOC meter, broadcast the results.
     {
       
-      for (int i=0; i<2; i++) // check if test mode is enabled on any of the channels, if so then run the test generator beofore sending heartbeat
-      {
-        if(test_mode_en[i])
-        {
-          test_generator(i); // update test data
-        }
-      }
+//      for (int i=0; i<2; i++) // check if test mode is enabled on any of the channels, if so then run the test generator beofore sending heartbeat
+//      {
+//        if(test_mode_en[i])
+//        {
+//          test_generator(i); // update test data
+//        }
+//      }
       
       tx_heartbeat(0); // make heartbeat transmissions
       tx_heartbeat(1);
@@ -245,7 +245,7 @@ if (trigger_flag == 1)
 
   ///////////////////////////////////////////////////////////////////////
   }// end of the main function  
-  digitalWrite(4, LOW); // second goal post
+
 }// end of the loop function
 
 
