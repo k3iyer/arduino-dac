@@ -16,4 +16,4 @@ In plug-in hybrid electric vehicles, the battery is charged and discharged more 
 == Details ==
 
 Right now all the design documentation is stored in a repository (svn). 
-  *The user manual R2 is a good but detailed description of what the system does
+  The user manual is a good but detailed description of what the system does
