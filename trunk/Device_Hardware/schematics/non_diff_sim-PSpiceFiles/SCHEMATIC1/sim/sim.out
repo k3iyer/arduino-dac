@@ -1,0 +1,271 @@
+
+**** 06/18/10 11:11:46 ******* PSpice 16.2.0 (Oct 2008) ******* ID# 0 ********
+
+ ** Profile: "SCHEMATIC1-sim"  [ S:\BATTERY RESEARCH\schematics\non_diff_sim-PSpiceFiles\SCHEMATIC1\sim.sim ] 
+
+
+ ****     CIRCUIT DESCRIPTION
+
+
+******************************************************************************
+
+
+
+
+** Creating circuit file "sim.cir" 
+** WARNING: THIS AUTOMATICALLY GENERATED FILE MAY BE OVERWRITTEN BY SUBSEQUENT SIMULATIONS
+
+*Libraries: 
+* Profile Libraries :
+* Local Libraries :
+* From [PSPICE NETLIST] section of C:\Software\Cadence\SPB_16.2\tools\PSpice\PSpice.ini file:
+.lib "nom.lib" 
+
+*Analysis directives: 
+.TRAN  0 1000ns 0 
+.PROBE V(alias(*)) I(alias(*)) W(alias(*)) D(alias(*)) NOISE(alias(*)) 
+.INC "..\SCHEMATIC1.net" 
+
+
+
+**** INCLUDING SCHEMATIC1.net ****
+* source NON_DIFF_SIM
+V_charge_ref         N61117 0 0Vdc
+V_V2         N68433 0 20Vdc
+X_U1C         N61117 N61101 N68433 0 N74717 LM324
+X_U1A         N65310 N65599 N68433 0 N65500 LM324
+R_R7         N65310 N65908 10k
+V_load_vef         N69834 0 0.05Vdc
+R_R4         N61101 0 0.05
+V_V5         N59430 N65908 4.2Vdc
+V_V1         N59430 0 6Vdc
+R_10k         N65310 N69834 10k
+R_R3         N59694 N65908 0.05
+R_R5         N65599 N65500 10k
+R_R8         N59430 N65908 4.2
+X_U1B         N65500 N59694 N68433 N65908 N59766 LM324
+R_R6         0 N65599 10k
+
+**** RESUMING sim.cir ****
+.END
+
+**** 06/18/10 11:11:46 ******* PSpice 16.2.0 (Oct 2008) ******* ID# 0 ********
+
+ ** Profile: "SCHEMATIC1-sim"  [ S:\BATTERY RESEARCH\schematics\non_diff_sim-PSpiceFiles\SCHEMATIC1\sim.sim ] 
+
+
+ ****     Diode MODEL PARAMETERS
+
+
+******************************************************************************
+
+
+
+
+               X_U1C.dx        X_U1C.dy        X_U1A.dx        X_U1A.dy        
+          IS  800.000000E-18  800.000000E-18  800.000000E-18  800.000000E-18 
+          RS    1               1.000000E-03    1               1.000000E-03 
+         CJO                   10.000000E-12                   10.000000E-12 
+
+
+               X_U1B.dx        X_U1B.dy        
+          IS  800.000000E-18  800.000000E-18 
+          RS    1               1.000000E-03 
+         CJO                   10.000000E-12 
+
+
+**** 06/18/10 11:11:46 ******* PSpice 16.2.0 (Oct 2008) ******* ID# 0 ********
+
+ ** Profile: "SCHEMATIC1-sim"  [ S:\BATTERY RESEARCH\schematics\non_diff_sim-PSpiceFiles\SCHEMATIC1\sim.sim ] 
+
+
+ ****     BJT MODEL PARAMETERS
+
+
+******************************************************************************
+
+
+
+
+               X_U1C.qx        X_U1A.qx        X_U1B.qx        
+               PNP             PNP             PNP             
+       LEVEL    1               1               1            
+          IS  800.000000E-18  800.000000E-18  800.000000E-18 
+          BF  166.7           166.7           166.7          
+          NF    1               1               1            
+          BR    1               1               1            
+          NR    1               1               1            
+         ISS    0               0               0            
+          RE    0               0               0            
+          RC    0               0               0            
+         CJE    0               0               0            
+         VJE     .75             .75             .75         
+         CJC    0               0               0            
+         VJC     .75             .75             .75         
+         MJC     .33             .33             .33         
+        XCJC    1               1               1            
+         CJS    0               0               0            
+         VJS     .75             .75             .75         
+          KF    0               0               0            
+          AF    1               1               1            
+          CN    2.2             2.2             2.2          
+           D     .52             .52             .52         
+
+
+**** 06/18/10 11:11:46 ******* PSpice 16.2.0 (Oct 2008) ******* ID# 0 ********
+
+ ** Profile: "SCHEMATIC1-sim"  [ S:\BATTERY RESEARCH\schematics\non_diff_sim-PSpiceFiles\SCHEMATIC1\sim.sim ] 
+
+
+ ****     Current Controlled Switch MODEL PARAMETERS
+
+
+******************************************************************************
+
+
+
+
+               X_U1C.sw2       X_U1C.sw1       X_U1C.sw3       X_U1C.sw4       
+         RON    1               1               1               1            
+        ROFF   10.000000E+06   10.000000E+06   10.000000E+06   10.000000E+06 
+         ION    0              -1.000000E-06   -1.000000E-06    0            
+        IOFF   -1.000000E-06    0               0              -1.000000E-06 
+
+
+               X_U1A.sw2       X_U1A.sw1       X_U1A.sw3       X_U1A.sw4       
+         RON    1               1               1               1            
+        ROFF   10.000000E+06   10.000000E+06   10.000000E+06   10.000000E+06 
+         ION    0              -1.000000E-06   -1.000000E-06    0            
+        IOFF   -1.000000E-06    0               0              -1.000000E-06 
+
+
+               X_U1B.sw2       X_U1B.sw1       X_U1B.sw3       X_U1B.sw4       
+         RON    1               1               1               1            
+        ROFF   10.000000E+06   10.000000E+06   10.000000E+06   10.000000E+06 
+         ION    0              -1.000000E-06   -1.000000E-06    0            
+        IOFF   -1.000000E-06    0               0              -1.000000E-06 
+
+
+**** 06/18/10 11:11:46 ******* PSpice 16.2.0 (Oct 2008) ******* ID# 0 ********
+
+ ** Profile: "SCHEMATIC1-sim"  [ S:\BATTERY RESEARCH\schematics\non_diff_sim-PSpiceFiles\SCHEMATIC1\sim.sim ] 
+
+
+ ****     INITIAL TRANSIENT SOLUTION       TEMPERATURE =   27.000 DEG C
+
+
+******************************************************************************
+
+
+
+ NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE     NODE   VOLTAGE
+
+
+(N59430)    6.0000 (N59694)    1.8000 (N59766)   19.3160 (N61101) 2.355E-09     
+
+(N61117)    0.0000 (N65310)     .9252 (N65500)    1.8554 (N65599)     .9279     
+
+(N65908)    1.8000 (N68433)   20.0000 (N69834)     .0500 (N74717)   19.2840     
+
+(X_U1A.6)     .0015                   (X_U1A.7)    1.8600                       
+
+(X_U1A.8)    1.8600                   (X_U1A.9)    0.0000                       
+
+(X_U1A.a)   20.0000                   (X_U1A.b)-92.73E-06                       
+
+(X_U1B.6)   -1.0186                   (X_U1B.7)   21.3460                       
+
+(X_U1B.8)   21.3460                   (X_U1B.9)    0.0000                       
+
+(X_U1B.a)   19.9590                   (X_U1B.b)    -.0406                       
+
+(X_U1C.6)    -.0560                   (X_U1C.7)   19.8570                       
+
+(X_U1C.8)   19.8570                   (X_U1C.9)    0.0000                       
+
+(X_U1C.a)   19.9890                   (X_U1C.b)    -.0115                       
+
+(X_U1A.10)    1.5360                  (X_U1A.11)     .0401                      
+
+(X_U1A.12)     .0429                  (X_U1A.13)    1.5220                      
+
+(X_U1A.14)    1.5210                  (X_U1A.53)   18.5000                      
+
+(X_U1A.54)     .8220                  (X_U1A.90)     .0927                      
+
+(X_U1A.91)   40.0000                  (X_U1A.92)  -40.0000                      
+
+(X_U1A.99)   10.0000                  (X_U1B.10)    2.4309                      
+
+(X_U1B.11)    1.8672                  (X_U1B.12)    1.8158                      
+
+(X_U1B.13)    2.4074                  (X_U1B.14)    2.4254                      
+
+(X_U1B.53)   18.5000                  (X_U1B.54)    2.6220                      
+
+(X_U1B.90)   40.5980                  (X_U1B.91)   40.0000                      
+
+(X_U1B.92)  -40.0000                  (X_U1B.99)   10.9000                      
+
+(X_U1C.10)     .6096                  (X_U1C.11)     .0417                      
+
+(X_U1C.12)     .0417                  (X_U1C.13)     .5951                      
+
+(X_U1C.14)     .5951                  (X_U1C.53)   18.5000                      
+
+(X_U1C.54)     .8220                  (X_U1C.90)   11.4720                      
+
+(X_U1C.91)   40.0000                  (X_U1C.92)  -40.0000                      
+
+(X_U1C.99)   10.0000                  
+
+
+
+
+    VOLTAGE SOURCE CURRENTS
+    NAME         CURRENT
+
+    V_charge_ref   4.710E-08
+    V_V2        -6.552E-03
+    V_load_vef   8.752E-05
+    V_V5        -1.002E+00
+    V_V1         1.932E-03
+    X_U1C.vb    -5.598E-07
+    X_U1C.vc    -1.147E-02
+    X_U1C.ve     1.837E-11
+    X_U1C.vlim   1.147E-02
+    X_U1C.vlp   -2.853E-11
+    X_U1C.vln   -5.148E-11
+    X_U1A.vb     1.534E-08
+    X_U1A.vc     1.665E-11
+    X_U1A.ve     9.459E-13
+    X_U1A.vlim   9.273E-05
+    X_U1A.vlp   -3.991E-11
+    X_U1A.vln   -4.010E-11
+    X_U1B.vb    -1.019E-05
+    X_U1B.vc    -4.060E-02
+    X_U1B.ve     1.659E-11
+    X_U1B.vlim   4.060E-02
+    X_U1B.vlp    8.754E-06
+    X_U1B.vln   -8.060E-11
+
+    TOTAL POWER DISSIPATION   4.41E+00  WATTS
+
+
+
+          JOB CONCLUDED
+
+**** 06/18/10 11:11:46 ******* PSpice 16.2.0 (Oct 2008) ******* ID# 0 ********
+
+ ** Profile: "SCHEMATIC1-sim"  [ S:\BATTERY RESEARCH\schematics\non_diff_sim-PSpiceFiles\SCHEMATIC1\sim.sim ] 
+
+
+ ****     JOB STATISTICS SUMMARY
+
+
+******************************************************************************
+
+
+
+  Total job time (using Solver 1)   =         .08
+
