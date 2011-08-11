@@ -1,0 +1,9 @@
+.l#*
+.s#*
+.b#*
+*.swp
+\~\$*
+*.dsnlck
+*.DSNlck
+*.tmp
+Thumbs.db
